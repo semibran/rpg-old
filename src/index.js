@@ -216,16 +216,28 @@ function render(view, state) {
       if (!squares) {
         let unit = map.units[cursor.selection]
         let move = unit.class === "soldier" ? 4 : 3
-        squares = view.squares = neighborhood(unit.position, move)
+        let range = unit.class === "archer" ? 2 : 1
+        squares = view.squares = {
+          move: neighborhood(unit.position, move),
+          attack: neighborhood(unit.position, move + range)
+        }
 
-        for (let i = 0; i < squares.length; i++) {
-          let square = squares[i]
+        for (let i = 0; i < squares.move.length; i++) {
+          let square = squares.move[i]
           for (let j = 0; j < map.units.length; j++) {
             let unit = map.units[j]
             if (square[0] === unit.position[0] && square[1] === unit.position[1]) {
-              squares.splice(i, 1)
+              squares.move.splice(i, 1)
               break
             }
+          }
+        }
+
+        for (let i = 0; i < squares.attack.length; i++) {
+          let square = squares.attack[i]
+          if (square[0] === unit.position[0] && square[1] === unit.position[1]) {
+            squares.attack.splice(i, 1)
+            break
           }
         }
       }
@@ -245,7 +257,11 @@ function render(view, state) {
   }
 
   if (squares) {
-    for (let [ x, y ] of squares) {
+    for (let [ x, y ] of squares.attack) {
+      context.drawImage(sprites.squares.attack, x * 16, y * 16)
+    }
+
+    for (let [ x, y ] of squares.move) {
       context.drawImage(sprites.squares.move, x * 16, y * 16)
     }
   }
@@ -254,10 +270,9 @@ function render(view, state) {
     let unit = map.units[i]
     let x = unit.position[0] * 16
     let y = unit.position[1] * 16
-
-    let sprite = sprites.pieces[unit.faction][equipment[unit.class]]
     let ox = x
     let oy = y
+    let sprite = sprites.pieces[unit.faction][equipment[unit.class]]
 
     if (animation && i === animation.data.target) {
       if (animation.type === "lift") {
