@@ -211,7 +211,8 @@ function render(view, state) {
         time: 0,
         data: {
           target: cursor.selection,
-          offset: 0
+          offset: 0,
+          range: 0
         }
       }
 
@@ -245,27 +246,57 @@ function render(view, state) {
     }
 
     if (animation.type === "float") {
+      let furthest = 0
       for (let [ x, y ] of squares.attack) {
-        if (Math.abs(x - unit.position[0]) + Math.abs(y - unit.position[1]) <= animation.time / 2) {
+        let steps = Math.abs(x - unit.position[0]) + Math.abs(y - unit.position[1])
+        if (steps <= animation.time / 2) {
           context.drawImage(sprites.squares.attack, x * 16, y * 16)
+        }
+
+        if (steps > furthest) {
+          furthest = steps
         }
       }
 
       for (let [ x, y ] of squares.move) {
-        if (Math.abs(x - unit.position[0]) + Math.abs(y - unit.position[1]) <= animation.time / 2) {
+        let steps = Math.abs(x - unit.position[0]) + Math.abs(y - unit.position[1])
+        if (steps <= animation.time / 2) {
           context.drawImage(sprites.squares.move, x * 16, y * 16)
         }
+
+        if (steps > furthest) {
+          furthest = steps
+        }
       }
+
+      animation.data.range = furthest
     }
   } else {
-    squares = view.squares = null
-    if (animation && animation.type !== "drop") {
-      animation = view.animation = {
-        type: "drop",
-        time: 0,
-        data: {
-          target: animation.data.target,
-          offset: animation.data.offset
+    if (animation) {
+      if (animation.type !== "drop") {
+        animation = view.animation = {
+          type: "drop",
+          time: 0,
+          data: {
+            target: animation.data.target,
+            offset: animation.data.offset,
+            range: animation.data.range
+          }
+        }
+      } else if (squares) {
+        let unit = map.units[animation.data.target]
+        for (let [ x, y ] of squares.attack) {
+          let steps = Math.abs(x - unit.position[0]) + Math.abs(y - unit.position[1])
+          if (steps <= animation.data.range - animation.time / 2) {
+            context.drawImage(sprites.squares.attack, x * 16, y * 16)
+          }
+        }
+
+        for (let [ x, y ] of squares.move) {
+          let steps = Math.abs(x - unit.position[0]) + Math.abs(y - unit.position[1])
+          if (steps <= animation.data.range - animation.time / 2) {
+            context.drawImage(sprites.squares.move, x * 16, y * 16)
+          }
         }
       }
     }
@@ -290,6 +321,7 @@ function render(view, state) {
         if (--animation.data.offset < 0) {
           animation.data.offset = 0
           view.animation = null
+          squares = view.squares = null
         }
       }
 
