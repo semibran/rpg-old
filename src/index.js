@@ -194,6 +194,8 @@ function render(view, state) {
   }
 
   if (cursor.selection !== null) {
+    let unit = map.units[cursor.selection]
+
     if (!animation) {
       animation = view.animation = {
         type: "lift",
@@ -214,7 +216,6 @@ function render(view, state) {
       }
 
       if (!squares) {
-        let unit = map.units[cursor.selection]
         let move = unit.class === "soldier" ? 4 : 3
         let range = unit.class === "archer" ? 2 : 1
         squares = view.squares = {
@@ -242,6 +243,20 @@ function render(view, state) {
         }
       }
     }
+
+    if (animation.type === "float") {
+      for (let [ x, y ] of squares.attack) {
+        if (Math.abs(x - unit.position[0]) + Math.abs(y - unit.position[1]) <= animation.time / 2) {
+          context.drawImage(sprites.squares.attack, x * 16, y * 16)
+        }
+      }
+
+      for (let [ x, y ] of squares.move) {
+        if (Math.abs(x - unit.position[0]) + Math.abs(y - unit.position[1]) <= animation.time / 2) {
+          context.drawImage(sprites.squares.move, x * 16, y * 16)
+        }
+      }
+    }
   } else {
     squares = view.squares = null
     if (animation && animation.type !== "drop") {
@@ -253,16 +268,6 @@ function render(view, state) {
           offset: animation.data.offset
         }
       }
-    }
-  }
-
-  if (squares) {
-    for (let [ x, y ] of squares.attack) {
-      context.drawImage(sprites.squares.attack, x * 16, y * 16)
-    }
-
-    for (let [ x, y ] of squares.move) {
-      context.drawImage(sprites.squares.move, x * 16, y * 16)
     }
   }
 
