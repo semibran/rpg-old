@@ -1,0 +1,29 @@
+{
+  "name": "rpg",
+  "version": "0.0.0",
+  "description": "rpg",
+  "author": "semibran (Brandon Semilla)",
+  "repository": "semibran/rpg",
+  "license": "MIT",
+  "main": "src/script.js",
+  "keywords": [],
+  "devDependencies": {
+    "autoprefixer": "^8.3.0",
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "clean-css-cli": "^4.1.11",
+    "gh-pages": "^1.1.0",
+    "html-minifier": "^3.5.15",
+    "jimp": "^0.2.28",
+    "node-sass": "^4.8.3",
+    "postcss-cli": "^5.0.0",
+    "rollup": "^0.58.1",
+    "rollup-plugin-commonjs": "^9.1.0",
+    "rollup-plugin-json": "^2.3.0",
+    "rollup-plugin-node-resolve": "^3.3.0",
+    "uglify-js": "^3.3.21"
+  },
+  "dependencies": {
+    "img-load": "^2.0.0"
+  }
+}
