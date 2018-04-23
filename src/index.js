@@ -1,95 +1,129 @@
 import loadImage from "img-load"
+import disassemble from "./sprites"
+import maps from "./maps"
+import View from "./view"
 
-const sourcemaps = {
-  squares: {
-    move:   [  0, 0, 16, 16 ],
-    attack: [ 16, 0, 16, 16 ]
-  },
-  pieces: {
-    player: {
-      sword:  [  0, 0, 16, 18 ],
-      axe:    [ 16, 0, 16, 18 ],
-      shield: [ 32, 0, 16, 18 ],
-      bow:    [ 48, 0, 16, 18 ]
-    },
-    enemy: {
-      sword:  [  0, 18, 16, 18 ],
-      axe:    [ 16, 18, 16, 18 ],
-      shield: [ 32, 18, 16, 18 ],
-      bow:    [ 48, 18, 16, 18 ]
-    },
-    ally: {
-      sword:  [  0, 36, 16, 18 ],
-      axe:    [ 16, 36, 16, 18 ],
-      shield: [ 32, 36, 16, 18 ],
-      bow:    [ 48, 36, 16, 18 ]
-    }
-  }
-}
-
-const equipment = {
-  soldier: "sword",
-  warrior: "axe",
-  knight: "shield",
-  archer: "bow"
-}
-
-let paths = [ "./sprites/grass.png", "./sprites/wall.png", "./sprites/pieces.png", "./sprites/shadow.png", "./sprites/squares.png" ]
-Promise.all(paths.map(path => loadImage(path)))
+loadImage("sprites.png")
   .then(main)
 
 let state = {
-  map: {
-    size: [ 16, 16 ],
-    layout: [
-      1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
-      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-      1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1,
-      1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1,
-      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-      1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1,
-      1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1,
-      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-      1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
-    ],
-    units: [
-      { class: "soldier", faction: "player", position: [ 6, 7 ] },
-      { class: "knight",  faction: "player", position: [ 7, 9 ] },
-      { class: "warrior", faction: "enemy",  position: [ 8, 6 ] },
-      { class: "archer",  faction: "ally",   position: [ 9, 8 ] }
-    ]
-  },
+  map: maps.test,
   cursor: {
     position: null,
     selection: null
   }
 }
 
-function main(sprites) {
-  sprites = {
-    floor: sprites[0],
-    wall: sprites[1],
-    shadow: sprites[3],
-    squares: extract(sprites[4], sourcemaps.squares),
-    pieces: extract(sprites[2], sourcemaps.pieces)
+function get(image, x, y) {
+  let i = (y * image.width + x) * 4
+  let r = image.data[i]
+  let g = image.data[i + 1]
+  let b = image.data[i + 2]
+  let a = image.data[i + 3]
+  return [ r, g, b, a ]
+}
+
+function replace(image, oldColor, newColor) {
+  for (var i = 0; i < image.data.length; i += 4) {
+    for (var c = 0; c < 4; c++) {
+      if (image.data[i + c] !== oldColor[c]) {
+        break
+      }
+    }
+
+    if (c !== 4) {
+      continue
+    }
+
+    for (var c = 0; c < 4; c++) {
+      image.data[i + c] = newColor[c]
+    }
+  }
+}
+
+function extract(image, x, y, width, height) {
+  var canvas = document.createElement("canvas")
+  var context = canvas.getContext("2d")
+  canvas.width = width
+  canvas.height = height
+  context.drawImage(image, -x, -y)
+  return canvas
+}
+
+function Canvas(width, height) {
+  var canvas = document.createElement("canvas")
+  canvas.width = width
+  canvas.height = height
+  return canvas.getContext("2d")
+}
+
+function main(spritesheet) {
+  let { map, cursor } = state
+  let sprites = disassemble(spritesheet)
+  sprites.squares = {
+    attack: extract(sprites.squares, 16, 0, 16, 16),
+    move: extract(sprites.squares, 0, 0, 16, 16)
   }
 
-  let { map, cursor } = state
-  let view = View(map.size[0] * 16, map.size[1] * 16, sprites)
+  sprites.pieces = { player: {}, enemy: {}, ally: {} }
+  console.log(sprites)
+
+  let palette = extract(sprites.piece, 0, 18, 3, 3)
+    .getContext("2d")
+    .getImageData(0, 0, 3, 3)
+
+  let colors = {
+    white: [ 255, 255, 255, 255 ],
+    lightBlue: get(palette, 0, 0),
+    blue:      get(palette, 1, 0),
+    darkBlue:  get(palette, 2, 0)
+  }
+
+  let palettes = {
+    player: [ get(palette, 0, 0), get(palette, 1, 0), get(palette, 2, 0) ],
+    enemy:  [ get(palette, 0, 1), get(palette, 1, 1), get(palette, 2, 1) ],
+    ally:   [ get(palette, 0, 2), get(palette, 1, 2), get(palette, 2, 2) ]
+  }
+
+  let equipments = [ "sword", "lance", "axe", "bow", "shield", "hat" ]
+  for (let faction in palettes) {
+    let palette = palettes[faction]
+    for (let equipment of equipments) {
+      let source = sprites["symbols/" + equipment]
+
+      let piece = Canvas(16, 18)
+      let base = sprites.piece
+        .getContext("2d")
+        .getImageData(0, 0, 16, 18)
+
+      replace(base, colors.blue, palette[1])
+      replace(base, colors.darkBlue, palette[2])
+      piece.putImageData(base, 0, 0)
+
+      let symbol = Canvas(source.width, source.height)
+      symbol.drawImage(source, 0, 0)
+
+      let template = symbol.getImageData(0, 0, source.width, source.height)
+      replace(template, colors.white, palette[0])
+      symbol.putImageData(template, 0, 0)
+      piece.drawImage(symbol.canvas, 4, 5)
+
+      replace(template, palette[0], palette[2])
+      symbol.putImageData(template, 0, 0)
+      piece.drawImage(symbol.canvas, 4, 4)
+
+      sprites.pieces[faction][equipment] = piece.canvas
+    }
+  }
+
+  let view = View(map.layout.size[0] * 16, map.layout.size[1] * 16, sprites)
   document.body.appendChild(view.context.canvas)
 
-  render(view, state)
+  View.render(view, state)
   requestAnimationFrame(loop)
 
   function loop() {
-    render(view, state)
+    View.render(view, state)
     requestAnimationFrame(loop)
   }
 
@@ -126,245 +160,4 @@ function main(sprites) {
     let height = canvas.height
     return [ Math.floor(x / width * 16), Math.floor(y / height * 16) ]
   }
-}
-
-function neighborhood(cell, range) {
-  range = range || 1
-  let start = cell
-  let cells = [ start ]
-  let queue = [ start ]
-  while (queue.length) {
-    let cell = queue.shift()
-    let steps = Math.abs(cell[0] - start[0]) + Math.abs(cell[1] - start[1])
-    let neighbors = [
-      [ cell[0] - 1, cell[1] ],
-      [ cell[0] + 1, cell[1] ],
-      [ cell[0], cell[1] - 1 ],
-      [ cell[0], cell[1] + 1 ]
-    ]
-
-    for (let neighbor of neighbors) {
-      let valid = true
-      for (let cell of cells) {
-        if (cell[0] === neighbor[0] && cell[1] === neighbor[1]) {
-          valid = false
-          break
-        }
-      }
-      if (valid) {
-        cells.push(neighbor)
-        if (steps + 1 < range) {
-          queue.push(neighbor)
-        }
-      }
-    }
-  }
-  return cells
-}
-
-function View(width, height, sprites) {
-  let canvas = document.createElement("canvas")
-  canvas.width = width
-  canvas.height = height
-
-  return {
-    context: canvas.getContext("2d"),
-    sprites: sprites,
-    animation: null,
-    squares: null
-  }
-}
-
-function render(view, state) {
-  let { context, sprites, animation, squares } = view
-  let { map, cursor } = state
-
-  for (let y = 0; y < map.size[0]; y++) {
-    for (let x = 0; x < map.size[1]; x++) {
-      let i = y * map.size[0] + x
-      let id = map.layout[i]
-      if (id === 0) {
-        context.drawImage(sprites.floor, x * 16, y * 16)
-      }
-    }
-  }
-
-  if (animation) {
-    animation.time++
-  }
-
-  if (cursor.selection !== null) {
-    let unit = map.units[cursor.selection]
-
-    if (!animation) {
-      animation = view.animation = {
-        type: "lift",
-        time: 0,
-        data: {
-          target: cursor.selection,
-          offset: 0
-        }
-      }
-    } else if (animation.type === "lift" && animation.time >= 8) {
-      animation = view.animation = {
-        type: "float",
-        time: 0,
-        data: {
-          target: cursor.selection,
-          offset: 0,
-          range: 0
-        }
-      }
-
-      if (!squares) {
-        let move = unit.class === "soldier" ? 4 : 3
-        let range = unit.class === "archer" ? 2 : 1
-        squares = view.squares = {
-          move: neighborhood(unit.position, move),
-          attack: neighborhood(unit.position, move + range)
-        }
-
-        for (let i = 0; i < squares.move.length; i++) {
-          let square = squares.move[i]
-          for (let j = 0; j < map.units.length; j++) {
-            let unit = map.units[j]
-            if (square[0] === unit.position[0] && square[1] === unit.position[1]) {
-              squares.move.splice(i, 1)
-              break
-            }
-          }
-        }
-
-        for (let i = 0; i < squares.attack.length; i++) {
-          let square = squares.attack[i]
-          if (square[0] === unit.position[0] && square[1] === unit.position[1]) {
-            squares.attack.splice(i, 1)
-            break
-          }
-        }
-      }
-    }
-
-    if (animation.type === "float") {
-      let furthest = 0
-      for (let [ x, y ] of squares.attack) {
-        let steps = Math.abs(x - unit.position[0]) + Math.abs(y - unit.position[1])
-        if (steps <= animation.time / 2) {
-          context.drawImage(sprites.squares.attack, x * 16, y * 16)
-        }
-
-        if (steps > furthest) {
-          furthest = steps
-        }
-      }
-
-      for (let [ x, y ] of squares.move) {
-        let steps = Math.abs(x - unit.position[0]) + Math.abs(y - unit.position[1])
-        if (steps <= animation.time / 2) {
-          context.drawImage(sprites.squares.move, x * 16, y * 16)
-        }
-
-        if (steps > furthest) {
-          furthest = steps
-        }
-      }
-
-      animation.data.range = furthest
-    }
-  } else {
-    if (animation) {
-      if (animation.type !== "drop") {
-        animation = view.animation = {
-          type: "drop",
-          time: 0,
-          data: {
-            target: animation.data.target,
-            offset: animation.data.offset,
-            range: animation.data.range
-          }
-        }
-      } else if (squares) {
-        let unit = map.units[animation.data.target]
-        for (let [ x, y ] of squares.attack) {
-          let steps = Math.abs(x - unit.position[0]) + Math.abs(y - unit.position[1])
-          if (steps <= animation.data.range - animation.time / 2) {
-            context.drawImage(sprites.squares.attack, x * 16, y * 16)
-          }
-        }
-
-        for (let [ x, y ] of squares.move) {
-          let steps = Math.abs(x - unit.position[0]) + Math.abs(y - unit.position[1])
-          if (steps <= animation.data.range - animation.time / 2) {
-            context.drawImage(sprites.squares.move, x * 16, y * 16)
-          }
-        }
-      }
-    }
-  }
-
-  for (let i = 0; i < map.units.length; i++) {
-    let unit = map.units[i]
-    let x = unit.position[0] * 16
-    let y = unit.position[1] * 16
-    let ox = x
-    let oy = y
-    let sprite = sprites.pieces[unit.faction][equipment[unit.class]]
-
-    if (animation && i === animation.data.target) {
-      if (animation.type === "lift") {
-        animation.data.offset = Math.min(8, animation.time)
-      } else if (animation.type === "float") {
-        let duration = 60 * 3
-        let progress = animation.time % duration / duration
-        animation.data.offset = 8 + Math.sin(2 * Math.PI * progress) * 2
-      } else if (animation.type === "drop") {
-        if (--animation.data.offset < 0) {
-          animation.data.offset = 0
-          view.animation = null
-          squares = view.squares = null
-        }
-      }
-
-      oy -= animation.data.offset
-    }
-
-    if (!animation
-    || animation && animation.data.target !== i
-    || animation && animation.data.target === i && animation.time % 2
-    ) {
-      context.drawImage(sprites.shadow, Math.round(x), Math.round(y + 2))
-    }
-
-    context.drawImage(sprite, Math.round(x), Math.round(oy - 2))
-  }
-
-  for (let y = 0; y < map.size[0]; y++) {
-    for (let x = 0; x < map.size[1]; x++) {
-      let i = y * map.size[0] + x
-      let id = map.layout[i]
-      if (id === 1) {
-        context.drawImage(sprites.wall, x * 16, y * 16 - 8)
-      }
-    }
-  }
-}
-
-function extract(image, sourcemap, sprites) {
-  sprites = sprites || {}
-  for (let id in sourcemap) {
-    if (Array.isArray(sourcemap[id])) {
-      let [ x, y, w, h ] = sourcemap[id]
-      let canvas = document.createElement("canvas")
-      canvas.width = w
-      canvas.height = h
-
-      let context = canvas.getContext("2d")
-      context.drawImage(image, -x, -y)
-
-      sprites[id] = canvas
-    } else {
-      sprites[id] = extract(image, sourcemap[id])
-    }
-  }
-  return sprites
 }

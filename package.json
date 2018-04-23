@@ -24,6 +24,7 @@
     "uglify-js": "^3.3.21"
   },
   "dependencies": {
-    "img-load": "^2.0.0"
+    "img-load": "^2.0.0",
+    "key-state": "^1.0.1"
   }
 }
