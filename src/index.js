@@ -137,6 +137,10 @@ function main(spritesheet) {
   window.addEventListener("mousedown", event => {
     let canvas = view.context.canvas
     if (event.target === canvas) {
+      if (!cursor.position) {
+        cursor.position = scale(event.offsetX, event.offsetY)
+      }
+
       let [ x, y ] = cursor.position
       for (let i = 0; i < map.units.length; i++) {
         let unit = map.units[i]
