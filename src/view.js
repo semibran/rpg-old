@@ -85,7 +85,7 @@ function render(view, state) {
 
       if (!squares) {
         let move = unit.class === "soldier" ? 5 : unit.class === "knight" ? 3 : 4
-        let range = unit.class === "archer" ? 2 : 1
+        let range = unit.class === "archer" || unit.class === "mage" ? 2 : 1
         squares = view.squares = {
           move: neighborhood(unit.position, move),
           attack: neighborhood(unit.position, move + range)
