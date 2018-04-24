@@ -2,8 +2,9 @@
   "soldier": "sword",
   "lancer": "lance",
   "warrior": "axe",
-  "knight": "shield",
   "archer": "bow",
+  "thief": "dagger",
+  "knight": "shield",
   "mage": "hat"
 }
 

@@ -65,6 +65,19 @@ function main(spritesheet) {
     move: extract(sprites.squares, 0, 0, 16, 16)
   }
 
+	sprites.arrows = {
+		left:      extract(sprites.arrows,  0,  0, 16, 16),
+		right:     extract(sprites.arrows, 16,  0, 16, 16),
+		up:        extract(sprites.arrows, 32,  0, 16, 16),
+		down:      extract(sprites.arrows, 48,  0, 16, 16),
+		upLeft:    extract(sprites.arrows,  0, 16, 16, 16),
+		upRight:   extract(sprites.arrows, 16, 16, 16, 16),
+		downLeft:  extract(sprites.arrows, 32, 16, 16, 16),
+		downRight: extract(sprites.arrows, 48, 16, 16, 16),
+		horiz:     extract(sprites.arrows,  0, 32, 16, 16),
+		vert:      extract(sprites.arrows, 16, 32, 16, 16),
+	}
+
   sprites.pieces = { player: {}, enemy: {}, ally: {} }
   console.log(sprites)
 
@@ -85,7 +98,7 @@ function main(spritesheet) {
     ally:   [ get(palette, 0, 2), get(palette, 1, 2), get(palette, 2, 2) ]
   }
 
-  let equipments = [ "sword", "lance", "axe", "bow", "shield", "hat" ]
+  let equipments = [ "sword", "lance", "axe", "bow", "dagger", "shield", "hat" ]
   for (let faction in palettes) {
     let palette = palettes[faction]
     for (let equipment of equipments) {
