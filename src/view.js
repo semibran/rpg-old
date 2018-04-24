@@ -99,7 +99,7 @@ function render(view, state) {
 			}
 
 			if (path) {
-				for (let i = 1; i < path.length; i++) {
+				for (let i = 0; i < path.length; i++) {
 					let [ x, y ] = path[i]
 					let l = false
 					let r = false
@@ -107,18 +107,20 @@ function render(view, state) {
 					let d = false
 
 					let prev = path[i - 1]
-					let dx = x - prev[0]
-					let dy = y - prev[1]
-					if (dx === 1) {
-						l = true
-					} else if (dx === -1) {
-						r = true
-					}
+					if (prev) {
+						let dx = x - prev[0]
+						let dy = y - prev[1]
+						if (dx === 1) {
+							l = true
+						} else if (dx === -1) {
+							r = true
+						}
 
-					if (dy === 1) {
-						u = true
-					} else if (dy === -1) {
-						d = true
+						if (dy === 1) {
+							u = true
+						} else if (dy === -1) {
+							d = true
+						}
 					}
 
 					let next = path[i + 1]
@@ -152,6 +154,14 @@ function render(view, state) {
 							direction = "downLeft"
 						} else if (d && r) {
 							direction = "downRight"
+						} else if (l && !i) {
+							direction = "leftStub"
+						} else if (r && !i) {
+							direction = "rightStub"
+						} else if (u && !i) {
+							direction = "upStub"
+						} else if (d && !i) {
+							direction = "downStub"
 						} else if (l) {
 							direction = "left"
 						} else if (r) {

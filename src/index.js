@@ -70,12 +70,16 @@ function main(spritesheet) {
 		right:     extract(sprites.arrows, 16,  0, 16, 16),
 		up:        extract(sprites.arrows, 32,  0, 16, 16),
 		down:      extract(sprites.arrows, 48,  0, 16, 16),
-		upLeft:    extract(sprites.arrows,  0, 16, 16, 16),
-		upRight:   extract(sprites.arrows, 16, 16, 16, 16),
-		downLeft:  extract(sprites.arrows, 32, 16, 16, 16),
-		downRight: extract(sprites.arrows, 48, 16, 16, 16),
-		horiz:     extract(sprites.arrows,  0, 32, 16, 16),
-		vert:      extract(sprites.arrows, 16, 32, 16, 16),
+		leftStub:  extract(sprites.arrows,  0, 16, 16, 16),
+		rightStub: extract(sprites.arrows, 16, 16, 16, 16),
+		upStub:    extract(sprites.arrows, 32, 16, 16, 16),
+		downStub:  extract(sprites.arrows, 48, 16, 16, 16),
+		upLeft:    extract(sprites.arrows,  0, 32, 16, 16),
+		upRight:   extract(sprites.arrows, 16, 32, 16, 16),
+		downLeft:  extract(sprites.arrows, 32, 32, 16, 16),
+		downRight: extract(sprites.arrows, 48, 32, 16, 16),
+		horiz:     extract(sprites.arrows,  0, 48, 16, 16),
+		vert:      extract(sprites.arrows, 16, 48, 16, 16),
 	}
 
   sprites.pieces = { player: {}, enemy: {}, ally: {} }
