@@ -1,14 +1,9 @@
-import Game from "./constants"
-import range from "./range"
-import equipment from "./equipment.json"
+import Game from "../lib/game"
+import Canvas from "../lib/canvas"
 
 function View(width, height, sprites) {
-	let canvas = document.createElement("canvas")
-	canvas.width = width
-	canvas.height = height
-
 	return {
-		context: canvas.getContext("2d"),
+		context: Canvas(width, height),
 		sprites: sprites,
 		animation: null,
 		nodes: null
@@ -17,7 +12,7 @@ function View(width, height, sprites) {
 
 function render(view, state) {
 	let { context, sprites, animation, nodes } = view
-	let { map, cursor } = state
+	let { map, ranges, cursor } = state
 
 	let floors = []
 	let walls = []
@@ -71,7 +66,7 @@ function render(view, state) {
 				}
 
 				if (!nodes) {
-					nodes = view.nodes = range(map, unit)
+					nodes = view.nodes = ranges[cursor.selection]
 				}
 			}
 		} else if (animation.type === "float") {
@@ -226,7 +221,7 @@ function render(view, state) {
 		let x = unit.position[0] * 16
 		let y = unit.position[1] * 16
 		let oy = y
-		let sprite = sprites.pieces[unit.faction][equipment[unit.class]]
+		let sprite = sprites.pieces[unit.faction][Game.equipment[unit.class]]
 
 		if (animation && i === animation.data.target) {
 			oy -= animation.data.offset

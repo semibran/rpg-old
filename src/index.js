@@ -1,4 +1,5 @@
 import loadImage from "img-load"
+import range from "../lib/range"
 import disassemble from "./sprites"
 import maps from "./maps"
 import View from "./view"
@@ -8,6 +9,7 @@ loadImage("sprites.png")
 
 let state = {
 	map: maps.test,
+	ranges: [],
 	cursor: {
 		position: null,
 		selection: null
@@ -15,10 +17,15 @@ let state = {
 }
 
 function main(spritesheet) {
-	let { map, cursor } = state
+	let { map, ranges, cursor } = state
 	let sprites = disassemble(spritesheet)
 	let view = View(map.layout.size[0] * 16, map.layout.size[1] * 16, sprites)
 	document.body.appendChild(view.context.canvas)
+
+	for (let i = 0; i < map.units.length; i++) {
+		let unit = map.units[i]
+		ranges[i] = range(map, unit)
+	}
 
 	View.render(view, state)
 	requestAnimationFrame(loop)

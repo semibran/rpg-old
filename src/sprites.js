@@ -34,11 +34,9 @@ export default function disassemble(spritesheet) {
 
 	sprites.pieces = { player: {}, enemy: {}, ally: {} }
 
-	let palette = (_ => {
-		let piece = Canvas(sprites.piece.width, sprites.piece.height)
-		piece.drawImage(sprites.piece, 0, 0)
-		piece.getImageData(0, 18, 3, 3)
-	})()
+	let palette = sprites.piece
+		.getContext("2d")
+		.getImageData(0, 18, 3, 3 )
 
 	let colors = {
 		white: [ 255, 255, 255, 255 ],
@@ -55,6 +53,8 @@ export default function disassemble(spritesheet) {
 		green: pixels.get(palette, 1, 2),
 		teal:  pixels.get(palette, 2, 2)
 	}
+
+	console.log(colors)
 
 	let palettes = {
 		player: [ colors.cyan, colors.blue, colors.navy ],
@@ -74,7 +74,7 @@ export default function disassemble(spritesheet) {
 				.getImageData(0, 0, 16, 18)
 
 			pixels.replace(base, colors.blue, palette[1])
-			pixels.replace(base, colors.darkBlue, palette[2])
+			pixels.replace(base, colors.navy, palette[2])
 			piece.putImageData(base, 0, 0)
 
 			let symbol = Canvas(source.width, source.height)
