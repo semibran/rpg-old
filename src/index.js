@@ -1,5 +1,5 @@
 import loadImage from "img-load"
-import range from "../lib/range"
+import neighborhood from "../lib/range"
 import disassemble from "./sprites"
 import maps from "./maps"
 import View from "./view"
@@ -24,7 +24,7 @@ function main(spritesheet) {
 
 	for (let i = 0; i < map.units.length; i++) {
 		let unit = map.units[i]
-		ranges[i] = range(map, unit)
+		ranges[i] = neighborhood(map, unit)
 	}
 
 	View.render(view, state)
@@ -52,7 +52,7 @@ function main(spritesheet) {
 			let [ x, y ] = cursor.position
 			for (let i = 0; i < map.units.length; i++) {
 				let unit = map.units[i]
-				if (unit.position[0] === x && unit.position[1] === y) {
+				if (unit.faction === "player" && unit.position[0] === x && unit.position[1] === y) {
 					cursor.selection = i
 					break
 				}
@@ -62,6 +62,30 @@ function main(spritesheet) {
 
 	window.addEventListener("mouseup", event => {
 		if (cursor.selection !== null) {
+			let unit = map.units[cursor.selection]
+			let range = ranges[cursor.selection]
+			for (let node of range) {
+				if (node.cell[0] === cursor.position[0] && node.cell[1] === cursor.position[1]) {
+					unit.position = cursor.position
+
+					view.animation = {
+						type: "move",
+						time: 0,
+						data: {
+							target: cursor.selection,
+							path: node.path
+						}
+					}
+
+					for (let i = 0; i < map.units.length; i++) {
+						let unit = map.units[i]
+						ranges[i] = neighborhood(map, unit)
+					}
+
+					break
+				}
+			}
+
 			cursor.selection = null
 		}
 	})

@@ -34,9 +34,9 @@ export default function disassemble(spritesheet) {
 
 	sprites.pieces = { player: {}, enemy: {}, ally: {} }
 
-	let palette = sprites.piece
+	let palette = sprites.palette
 		.getContext("2d")
-		.getImageData(0, 18, 3, 3 )
+		.getImageData(0, 0, 3, 3)
 
 	let colors = {
 		white: [ 255, 255, 255, 255 ],
@@ -68,10 +68,10 @@ export default function disassemble(spritesheet) {
 		for (let equipment of equipments) {
 			let source = sprites["symbols/" + equipment]
 
-			let piece = Canvas(16, 18)
+			let piece = Canvas(16, 16)
 			let base = sprites.piece
 				.getContext("2d")
-				.getImageData(0, 0, 16, 18)
+				.getImageData(0, 0, 16, 16)
 
 			pixels.replace(base, colors.blue, palette[1])
 			pixels.replace(base, colors.navy, palette[2])
@@ -83,11 +83,11 @@ export default function disassemble(spritesheet) {
 			let template = symbol.getImageData(0, 0, source.width, source.height)
 			pixels.replace(template, colors.white, palette[0])
 			symbol.putImageData(template, 0, 0)
-			piece.drawImage(symbol.canvas, 4, 5)
+			piece.drawImage(symbol.canvas, 4, 4)
 
 			pixels.replace(template, palette[0], palette[2])
 			symbol.putImageData(template, 0, 0)
-			piece.drawImage(symbol.canvas, 4, 4)
+			piece.drawImage(symbol.canvas, 4, 3)
 
 			sprites.pieces[faction][equipment] = piece.canvas
 		}

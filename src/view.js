@@ -5,13 +5,12 @@ function View(width, height, sprites) {
 	return {
 		context: Canvas(width, height),
 		sprites: sprites,
-		animation: null,
-		nodes: null
+		animation: null
 	}
 }
 
 function render(view, state) {
-	let { context, sprites, animation, nodes } = view
+	let { context, sprites, animation } = view
 	let { map, ranges, cursor } = state
 
 	let floors = []
@@ -64,14 +63,11 @@ function render(view, state) {
 						range: 0
 					}
 				}
-
-				if (!nodes) {
-					nodes = view.nodes = ranges[cursor.selection]
-				}
 			}
 		} else if (animation.type === "float") {
 			let furthest = 0
-			for (let node of nodes) {
+			let range = ranges[cursor.selection]
+			for (let node of range) {
 				let [ x, y ] = node.cell
 				let steps = Math.abs(x - unit.position[0]) + Math.abs(y - unit.position[1])
 				if (steps <= animation.time) {
@@ -86,7 +82,7 @@ function render(view, state) {
 			animation.data.range = furthest
 
 			let path = null
-			for (let node of nodes) {
+			for (let node of range) {
 				if (node.cell[0] === cursor.position[0] && node.cell[1] === cursor.position[1]) {
 					path = node.path
 					break
@@ -181,7 +177,11 @@ function render(view, state) {
 	} else {
 		if (animation) {
 			let unit = map.units[animation.data.target]
-			if (animation.type !== "drop") {
+			if (animation.type === "move") {
+				if (animation.time >= animation.data.path.length * 4) {
+					animation = view.animation = null
+				}
+			} else if (animation.type !== "drop") {
 				animation = view.animation = {
 					type: "drop",
 					time: 0,
@@ -192,8 +192,9 @@ function render(view, state) {
 					}
 				}
 			} else {
-				if (nodes) {
-					for (let node of nodes) {
+				let range = ranges[animation.data.target]
+				if (range) {
+					for (let node of range) {
 						let [ x, y ] = node.cell
 						let steps = Math.abs(x - unit.position[0]) + Math.abs(y - unit.position[1])
 						if (steps <= animation.data.range - animation.time) {
@@ -205,7 +206,6 @@ function render(view, state) {
 				if (--animation.data.offset < 0) {
 					animation.data.offset = 0
 					view.animation = null
-					nodes = view.nodes = null
 				}
 			}
 		}
@@ -224,17 +224,35 @@ function render(view, state) {
 		let sprite = sprites.pieces[unit.faction][Game.equipment[unit.class]]
 
 		if (animation && i === animation.data.target) {
-			oy -= animation.data.offset
+			if ([ "lift", "float", "drop" ].includes(animation.type)) {
+				oy -= animation.data.offset
+			} else if (animation.type === "move") {
+				let index = Math.floor(animation.time / 4)
+				let mod = animation.time % 4 * 0.25
+				let cell = animation.data.path[index]
+				let next = animation.data.path[index + 1]
+
+				x = cell[0] * 16
+				y = cell[1] * 16
+
+				if (next) {
+					x += (next[0] * 16 - x) * mod
+					y += (next[1] * 16 - y) * mod
+				}
+
+				oy = y
+			}
 		}
 
 		if (!animation
 		|| animation && animation.data.target !== i
+		|| animation && animation.data.target === i && animation.type === "move"
 		|| animation && animation.data.target === i && animation.time % 2
 		) {
-			context.drawImage(sprites.shadow, Math.round(x), Math.round(y + 2))
+			context.drawImage(sprites.shadow, Math.round(x), Math.round(y + 3))
 		}
 
-		context.drawImage(sprite, Math.round(x), Math.round(oy - 2))
+		context.drawImage(sprite, Math.round(x), Math.round(oy))
 	}
 }
 
