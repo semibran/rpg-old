@@ -329,7 +329,7 @@ function render(view, state) {
 		) {
 			items.push({
 				sprite: sprites.shadow,
-				position: [ x, y - 2, 5 ]
+				position: [ x, y, 3 ]
 			})
 		}
 	}
