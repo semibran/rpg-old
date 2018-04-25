@@ -1,4 +1,5 @@
 import loadImage from "img-load"
+import listen from "key-state"
 import neighborhood from "../lib/range"
 import disassemble from "./sprites"
 import maps from "./maps"
@@ -7,8 +8,13 @@ import View from "./view"
 loadImage("sprites.png")
 	.then(main)
 
+const keys = listen(window, {
+	pause: [ "KeyP" ]
+})
+
 let state = {
 	map: maps.test,
+	paused: false,
 	ranges: [],
 	cursor: {
 		position: null,
@@ -32,7 +38,11 @@ function main(spritesheet) {
 	requestAnimationFrame(loop)
 
 	function loop() {
-		View.render(view, state)
+		if (keys.pause === 1) state.paused = !state.paused
+		if (!state.paused) {
+			View.render(view, state)
+		}
+
 		requestAnimationFrame(loop)
 		// setTimeout(loop, 1000 / 15) // debug speed
 	}
