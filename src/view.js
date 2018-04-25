@@ -74,8 +74,8 @@ function render(view, state) {
 
 			let furthest = 0
 			let range = ranges[cursor.selection]
-			for (let cell of range.attack) {
-				let [ x, y ] = cell
+			for (let node of range.attack) {
+				let [ x, y ] = node.cell
 				let valid = true
 				for (let i = 0; i < range.move.length; i++) {
 					let other = range.move[i].cell
@@ -88,7 +88,7 @@ function render(view, state) {
 					continue
 				}
 
-				let steps = manhattan(cell, unit.position)
+				let steps = manhattan(node.cell, unit.position)
 				if (steps <= animation.time) {
 					items.push({
 						sprite: sprites.squares.attack,
@@ -115,10 +115,39 @@ function render(view, state) {
 			animation.data.range = furthest
 
 			if (!equals(cursor.position, unit.position)) {
+				let target = null
 				for (let node of range.move) {
 					if (equals(node.cell, cursor.position)) {
-						path = view.path = node.path
+						target = node
 						break
+					}
+				}
+
+				if (target) {
+					path = view.path = target.path
+				} else {
+					let target = null
+					for (let node of range.attack) {
+						if (equals(node.cell, cursor.position)) {
+							for (let other of map.units) {
+								if (equals(node.cell, other.position)) {
+									target = other
+									path = view.path = node.path
+									break
+								}
+							}
+						}
+					}
+
+					if (target) {
+						items.push({
+							sprite: sprites.swords,
+							position: [
+								target.position[0] * 16 + 8 - sprites.swords.width / 2,
+								target.position[1] * 16 + 8 - sprites.swords.height / 2,
+								-16 + Math.sin(2 * Math.PI * progress) * 2
+							]
+						})
 					}
 				}
 
@@ -248,12 +277,12 @@ function render(view, state) {
 			} else {
 				let range = ranges[animation.data.target]
 				if (range) {
-					for (let cell of range.attack) {
-						let [ x, y ] = cell
+					for (let node of range.attack) {
+						let [ x, y ] = node.cell
 						let valid = true
 						for (let i = 0; i < range.move.length; i++) {
-							let other = range.move[i].cell
-							if (other[0] === x && other[1] === y) {
+							let other = range.move[i]
+							if (equals(node.cell, other.cell)) {
 								valid = false
 							}
 						}
@@ -262,7 +291,7 @@ function render(view, state) {
 							continue
 						}
 
-						let steps = manhattan(cell, unit.position)
+						let steps = manhattan(node.cell, unit.position)
 						if (steps <= animation.data.range - animation.time) {
 							items.push({
 								sprite: sprites.squares.attack,
