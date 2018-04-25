@@ -51,8 +51,8 @@ function render(view, state) {
 				}
 			}
 		} else if (animation.type === "lift") {
-			if (animation.time < 8) {
-				animation.data.offset = animation.time
+			if (animation.time < 4) {
+				animation.data.offset = animation.time * 2
 			} else {
 				animation = view.animation = {
 					type: "float",
@@ -178,8 +178,16 @@ function render(view, state) {
 		if (animation) {
 			let unit = map.units[animation.data.target]
 			if (animation.type === "move") {
-				if (animation.time >= animation.data.path.length * 4) {
-					animation = view.animation = null
+				if (animation.time >= animation.data.path.length * 4 - 4) {
+					animation = view.animation = {
+						type: "drop",
+						time: 0,
+						data: {
+							target: animation.data.target,
+							offset: 8,
+							range: 0
+						}
+					}
 				}
 			} else if (animation.type !== "drop") {
 				animation = view.animation = {
@@ -203,7 +211,8 @@ function render(view, state) {
 					}
 				}
 
-				if (--animation.data.offset < 0) {
+				animation.data.offset -= 2
+				if (animation.data.offset < 0) {
 					animation.data.offset = 0
 					view.animation = null
 				}
@@ -240,13 +249,12 @@ function render(view, state) {
 					y += (next[1] * 16 - y) * mod
 				}
 
-				oy = y
+				oy = y - 8
 			}
 		}
 
 		if (!animation
 		|| animation && animation.data.target !== i
-		|| animation && animation.data.target === i && animation.type === "move"
 		|| animation && animation.data.target === i && animation.time % 2
 		) {
 			context.drawImage(sprites.shadow, Math.round(x), Math.round(y + 3))

@@ -54,8 +54,6 @@ export default function disassemble(spritesheet) {
 		teal:  pixels.get(palette, 2, 2)
 	}
 
-	console.log(colors)
-
 	let palettes = {
 		player: [ colors.cyan, colors.blue, colors.navy ],
 		enemy:  [ colors.pink, colors.red, colors.purple ],
@@ -73,6 +71,7 @@ export default function disassemble(spritesheet) {
 				.getContext("2d")
 				.getImageData(0, 0, 16, 16)
 
+			pixels.replace(base, colors.cyan, palette[0])
 			pixels.replace(base, colors.blue, palette[1])
 			pixels.replace(base, colors.navy, palette[2])
 			piece.putImageData(base, 0, 0)
@@ -83,11 +82,11 @@ export default function disassemble(spritesheet) {
 			let template = symbol.getImageData(0, 0, source.width, source.height)
 			pixels.replace(template, colors.white, palette[0])
 			symbol.putImageData(template, 0, 0)
-			piece.drawImage(symbol.canvas, 4, 4)
+			piece.drawImage(symbol.canvas, 5, 5)
 
 			pixels.replace(template, palette[0], palette[2])
 			symbol.putImageData(template, 0, 0)
-			piece.drawImage(symbol.canvas, 4, 3)
+			piece.drawImage(symbol.canvas, 5, 4)
 
 			sprites.pieces[faction][equipment] = piece.canvas
 		}
