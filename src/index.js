@@ -33,6 +33,7 @@ function main(spritesheet) {
 	function loop() {
 		View.render(view, state)
 		requestAnimationFrame(loop)
+		// setTimeout(loop, 1000 / 15) // debug speed
 	}
 
 	window.addEventListener("mousemove", event => {

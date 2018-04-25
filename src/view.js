@@ -61,7 +61,7 @@ function render(view, state) {
 					time: 0,
 					data: {
 						target: cursor.selection,
-						offset: 0,
+						offset: animation.data.offset,
 						range: 0
 					}
 				}
@@ -87,7 +87,7 @@ function render(view, state) {
 				if (steps <= animation.time) {
 					items.push({
 						sprite: sprites.squares.attack,
-						position: [ x * 16, y * 16 + 1, -1 ]
+						position: [ x * 16, y * 16 + 2, -2 ]
 					})
 				}
 			}
@@ -95,10 +95,10 @@ function render(view, state) {
 			for (let node of range.move) {
 				let [ x, y ] = node.cell
 				let steps = manhattan(node.cell, unit.position)
-				if (steps <= animation.time) {
+				if (steps && steps <= animation.time) {
 					items.push({
 						sprite: sprites.squares.move,
-						position: [ x * 16, y * 16 - 2, 2 ]
+						position: [ x * 16, y * 16, 0 ]
 					})
 				}
 
@@ -195,7 +195,7 @@ function render(view, state) {
 							let sprite = sprites.arrows[direction]
 							items.push({
 								sprite: sprite,
-								position: [ x * 16, y * 16 + 1, -1 ]
+								position: [ x * 16, y * 16 + 2, -2 ]
 							})
 						}
 					}
@@ -252,7 +252,7 @@ function render(view, state) {
 						if (steps <= animation.data.range - animation.time) {
 							items.push({
 								sprite: sprites.squares.attack,
-								position: [ x * 16, y * 16 + 1, -1 ]
+								position: [ x * 16, y * 16 + 2, -2 ]
 							})
 						}
 					}
@@ -260,10 +260,10 @@ function render(view, state) {
 					for (let node of range.move) {
 						let [ x, y ] = node.cell
 						let steps = manhattan(node.cell, unit.position)
-						if (steps <= animation.data.range - animation.time) {
+						if (steps && steps <= animation.data.range - animation.time) {
 							items.push({
 								sprite: sprites.squares.move,
-								position: [ x * 16, y * 16 - 2, 2 ]
+								position: [ x * 16, y * 16 ]
 							})
 						}
 					}
@@ -295,8 +295,7 @@ function render(view, state) {
 
 		if (animation && i === animation.data.target) {
 			if ([ "lift", "float", "drop" ].includes(animation.type)) {
-				y += 2
-				z = -animation.data.offset - 2
+				z = -animation.data.offset
 			} else if (animation.type === "move") {
 				let index = Math.floor(animation.time / 4)
 				let mod = animation.time % 4 * 0.25
@@ -312,6 +311,16 @@ function render(view, state) {
 					y += (next[1] * 16 - y) * mod
 				}
 			}
+
+			items.push({
+				sprite: sprite,
+				position: [ x, y + 3, z - 3 ]
+			})
+		} else {
+			items.push({
+				sprite: sprite,
+				position: [ x, y + 1, z - 1 ]
+			})
 		}
 
 		if (!animation
@@ -323,11 +332,6 @@ function render(view, state) {
 				position: [ x, y - 2, 5 ]
 			})
 		}
-
-		items.push({
-			sprite: sprite,
-			position: [ x, y, z ]
-		})
 	}
 
 	items.sort((a, b) => a.position[1] - b.position[1])
