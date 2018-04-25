@@ -67,6 +67,10 @@ function render(view, state) {
 				}
 			}
 		} else if (animation.type === "float") {
+			let duration = 60 * 3
+			let progress = animation.time % duration / duration
+			animation.data.offset = 8 + Math.sin(2 * Math.PI * progress) * 2
+
 			let furthest = 0
 			let range = ranges[cursor.selection]
 			for (let cell of range.attack) {
@@ -108,10 +112,6 @@ function render(view, state) {
 			}
 
 			animation.data.range = furthest
-
-			let duration = 60 * 3
-			let progress = animation.time % duration / duration
-			animation.data.offset = 8 + Math.sin(2 * Math.PI * progress) * 2
 
 			if (!equals(cursor.position, unit.position)) {
 				let path = null

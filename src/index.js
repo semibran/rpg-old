@@ -12,7 +12,8 @@ let state = {
 	ranges: [],
 	cursor: {
 		position: null,
-		selection: null
+		selection: null,
+		released: false
 	}
 }
 
@@ -69,7 +70,14 @@ function main(spritesheet) {
 		if (cursor.selection !== null) {
 			let unit = map.units[cursor.selection]
 			if (cursor.position[0] === unit.position[0] && cursor.position[1] === unit.position[1]) {
-				return
+				if (!cursor.released) {
+					cursor.released = true
+					return
+				} else {
+					cursor.released = false
+					cursor.selection = null
+					return
+				}
 			}
 
 			let range = ranges[cursor.selection]
@@ -95,6 +103,7 @@ function main(spritesheet) {
 				}
 			}
 
+			cursor.released = false
 			cursor.selection = null
 		}
 	})
