@@ -25,7 +25,6 @@ function main(spritesheet) {
 	for (let i = 0; i < map.units.length; i++) {
 		let unit = map.units[i]
 		ranges[i] = neighborhood(map, unit)
-		console.log(unit.class, unit.position, ranges[i])
 	}
 
 	View.render(view, state)
