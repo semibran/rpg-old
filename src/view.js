@@ -122,8 +122,6 @@ function render(view, state) {
 					}
 				}
 
-				console.log(path)
-
 				if (path) {
 					let [ x, y ] = path[path.length - 1]
 					let sprite = sprites.pieces[unit.faction][Game.equipment[unit.class]]
@@ -218,6 +216,8 @@ function render(view, state) {
 						}
 					}
 				}
+			} else {
+				path = view.path = null
 			}
 		}
 	} else {
