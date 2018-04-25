@@ -158,7 +158,12 @@ function render(view, state) {
 					if (animation.time % 2) {
 						items.push({
 							sprite: sprite,
-							position: [ x * 16, y * 16 + 3, -3 ]
+							position: [ x * 16, y * 16 + 3, -3 - animation.data.offset ]
+						})
+
+						items.push({
+							sprite: sprites.shadow,
+							position: [ x * 16, y * 16, 3 ]
 						})
 					}
 
