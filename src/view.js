@@ -14,6 +14,7 @@ function render(view, state) {
 	let { map, ranges, cursor } = state
 
 	let items = []
+	let squares = []
 	let floors = []
 	let walls = []
 	for (let y = 0; y < map.layout.size[1]; y++) {
@@ -68,11 +69,37 @@ function render(view, state) {
 		} else if (animation.type === "float") {
 			let furthest = 0
 			let range = ranges[cursor.selection]
-			for (let node of range) {
-				let [ x, y ] = node.cell
-				let steps = Math.abs(x - unit.position[0]) + Math.abs(y - unit.position[1])
+			for (let cell of range.attack) {
+				let [ x, y ] = cell
+				let valid = true
+				for (let i = 0; i < range.move.length; i++) {
+					let other = range.move[i].cell
+					if (other[0] === x && other[1] === y) {
+						valid = false
+					}
+				}
+
+				if (!valid) {
+					continue
+				}
+
+				let steps = manhattan(cell, unit.position)
 				if (steps <= animation.time) {
-					context.drawImage(sprites.squares.move, x * 16, y * 16)
+					items.push({
+						sprite: sprites.squares.attack,
+						position: [ x * 16, y * 16 + 1, -1 ]
+					})
+				}
+			}
+
+			for (let node of range.move) {
+				let [ x, y ] = node.cell
+				let steps = manhattan(node.cell, unit.position)
+				if (steps <= animation.time) {
+					items.push({
+						sprite: sprites.squares.move,
+						position: [ x * 16, y * 16 - 2, 2 ]
+					})
 				}
 
 				if (steps > furthest) {
@@ -83,7 +110,7 @@ function render(view, state) {
 			animation.data.range = furthest
 
 			let path = null
-			for (let node of range) {
+			for (let node of range.move) {
 				if (node.cell[0] === cursor.position[0] && node.cell[1] === cursor.position[1]) {
 					path = node.path
 					break
@@ -168,7 +195,7 @@ function render(view, state) {
 							let sprite = sprites.arrows[direction]
 							items.push({
 								sprite: sprite,
-								position: [ x * 16, y * 16 - 1, 0 ]
+								position: [ x * 16, y * 16 - 1, 1 ]
 							})
 						}
 					}
@@ -207,11 +234,37 @@ function render(view, state) {
 			} else {
 				let range = ranges[animation.data.target]
 				if (range) {
-					for (let node of range) {
-						let [ x, y ] = node.cell
-						let steps = Math.abs(x - unit.position[0]) + Math.abs(y - unit.position[1])
+					for (let cell of range.attack) {
+						let [ x, y ] = cell
+						let valid = true
+						for (let i = 0; i < range.move.length; i++) {
+							let other = range.move[i].cell
+							if (other[0] === x && other[1] === y) {
+								valid = false
+							}
+						}
+
+						if (!valid) {
+							continue
+						}
+
+						let steps = manhattan(cell, unit.position)
 						if (steps <= animation.data.range - animation.time) {
-							context.drawImage(sprites.squares.move, x * 16, y * 16)
+							items.push({
+								sprite: sprites.squares.attack,
+								position: [ x * 16, y * 16 - 3, 3 ]
+							})
+						}
+					}
+
+					for (let node of range.move) {
+						let [ x, y ] = node.cell
+						let steps = manhattan(node.cell, unit.position)
+						if (steps <= animation.data.range - animation.time) {
+							items.push({
+								sprite: sprites.squares.move,
+								position: [ x * 16, y * 16 - 2, 2 ]
+							})
 						}
 					}
 				}
@@ -266,7 +319,7 @@ function render(view, state) {
 		) {
 			items.push({
 				sprite: sprites.shadow,
-				position: [ x, y - 1, 4 ]
+				position: [ x, y - 2, 5 ]
 			})
 		}
 
@@ -282,6 +335,10 @@ function render(view, state) {
 		let [ x, y, z ] = item.position
 		context.drawImage(item.sprite, Math.round(x), Math.round(y + z))
 	}
+}
+
+function manhattan(a, b) {
+	return Math.abs(b[0] - a[0]) + Math.abs(b[1] - a[1])
 }
 
 export default View

@@ -25,6 +25,7 @@ function main(spritesheet) {
 	for (let i = 0; i < map.units.length; i++) {
 		let unit = map.units[i]
 		ranges[i] = neighborhood(map, unit)
+		console.log(unit.class, unit.position, ranges[i])
 	}
 
 	View.render(view, state)
@@ -52,7 +53,7 @@ function main(spritesheet) {
 			let [ x, y ] = cursor.position
 			for (let i = 0; i < map.units.length; i++) {
 				let unit = map.units[i]
-				if (unit.faction === "player" && unit.position[0] === x && unit.position[1] === y) {
+				if (unit.position[0] === x && unit.position[1] === y) {
 					cursor.selection = i
 					break
 				}
@@ -64,7 +65,7 @@ function main(spritesheet) {
 		if (cursor.selection !== null) {
 			let unit = map.units[cursor.selection]
 			let range = ranges[cursor.selection]
-			for (let node of range) {
+			for (let node of range.move) {
 				if (node.cell[0] === cursor.position[0] && node.cell[1] === cursor.position[1]) {
 					unit.position = cursor.position
 
