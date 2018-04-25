@@ -5,12 +5,13 @@ function View(width, height, sprites) {
 	return {
 		context: Canvas(width, height),
 		sprites: sprites,
-		animation: null
+		animation: null,
+		path: null
 	}
 }
 
 function render(view, state) {
-	let { context, sprites, animation } = view
+	let { context, sprites, animation, path } = view
 	let { map, ranges, cursor } = state
 
 	let items = []
@@ -114,16 +115,17 @@ function render(view, state) {
 			animation.data.range = furthest
 
 			if (!equals(cursor.position, unit.position)) {
-				let path = null
 				for (let node of range.move) {
 					if (equals(node.cell, cursor.position)) {
-						path = node.path
+						path = view.path = node.path
 						break
 					}
 				}
 
+				console.log(path)
+
 				if (path) {
-					let [ x, y ] = cursor.position
+					let [ x, y ] = path[path.length - 1]
 					let sprite = sprites.pieces[unit.faction][Game.equipment[unit.class]]
 
 					if (animation.time % 2) {
