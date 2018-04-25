@@ -49,6 +49,10 @@ function main(spritesheet) {
 				cursor.position = scale(event.offsetX, event.offsetY)
 			}
 
+			if (view.animation) {
+				return
+			}
+
 			let [ x, y ] = cursor.position
 			for (let i = 0; i < map.units.length; i++) {
 				let unit = map.units[i]
