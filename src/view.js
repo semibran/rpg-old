@@ -13,6 +13,7 @@ function render(view, state) {
 	let { context, sprites, animation } = view
 	let { map, ranges, cursor } = state
 
+	let items = []
 	let floors = []
 	let walls = []
 	for (let y = 0; y < map.layout.size[1]; y++) {
@@ -164,7 +165,11 @@ function render(view, state) {
 						}
 
 						if (direction) {
-							context.drawImage(sprites.arrows[direction], x * 16, y * 16)
+							let sprite = sprites.arrows[direction]
+							items.push({
+								sprite: sprite,
+								position: [ x * 16, y * 16 - 1, 0 ]
+							})
 						}
 					}
 				}
@@ -222,19 +227,22 @@ function render(view, state) {
 
 	for (let wall of walls) {
 		let [ x, y ] = wall.cell
-		context.drawImage(sprites.wall, x * 16, y * 16 - 8)
+		items.push({
+			sprite: sprites.wall,
+			position: [ x * 16, y * 16, -8 ]
+		})
 	}
 
 	for (let i = 0; i < map.units.length; i++) {
 		let unit = map.units[i]
 		let x = unit.position[0] * 16
 		let y = unit.position[1] * 16
-		let oy = y
+		let z = 0
 		let sprite = sprites.pieces[unit.faction][Game.equipment[unit.class]]
 
 		if (animation && i === animation.data.target) {
 			if ([ "lift", "float", "drop" ].includes(animation.type)) {
-				oy -= animation.data.offset
+				z = -animation.data.offset
 			} else if (animation.type === "move") {
 				let index = Math.floor(animation.time / 4)
 				let mod = animation.time % 4 * 0.25
@@ -243,13 +251,12 @@ function render(view, state) {
 
 				x = cell[0] * 16
 				y = cell[1] * 16
+				z = -8
 
 				if (next) {
 					x += (next[0] * 16 - x) * mod
 					y += (next[1] * 16 - y) * mod
 				}
-
-				oy = y - 8
 			}
 		}
 
@@ -257,10 +264,23 @@ function render(view, state) {
 		|| animation && animation.data.target !== i
 		|| animation && animation.data.target === i && animation.time % 2
 		) {
-			context.drawImage(sprites.shadow, Math.round(x), Math.round(y + 3))
+			items.push({
+				sprite: sprites.shadow,
+				position: [ x, y - 1, 4 ]
+			})
 		}
 
-		context.drawImage(sprite, Math.round(x), Math.round(oy))
+		items.push({
+			sprite: sprite,
+			position: [ x, y, z ]
+		})
+	}
+
+	items.sort((a, b) => a.position[1] - b.position[1])
+
+	for (let item of items) {
+		let [ x, y, z ] = item.position
+		context.drawImage(item.sprite, Math.round(x), Math.round(y + z))
 	}
 }
 
