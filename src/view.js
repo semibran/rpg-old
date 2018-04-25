@@ -118,6 +118,16 @@ function render(view, state) {
 			}
 
 			if (path) {
+				let [ x, y ] = cursor.position
+				let sprite = sprites.pieces[unit.faction][Game.equipment[unit.class]]
+
+				if (animation.time % 2) {
+					items.push({
+						sprite: sprite,
+						position: [ x * 16, y * 16 + 3, -3 ]
+					})
+				}
+
 				for (let i = 0; i < path.length; i++) {
 					let [ x, y ] = path[i]
 					let l = false
