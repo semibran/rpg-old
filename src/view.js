@@ -109,112 +109,114 @@ function render(view, state) {
 
 			animation.data.range = furthest
 
-			let path = null
-			for (let node of range.move) {
-				if (node.cell[0] === cursor.position[0] && node.cell[1] === cursor.position[1]) {
-					path = node.path
-					break
-				}
-			}
-
-			if (path) {
-				let [ x, y ] = cursor.position
-				let sprite = sprites.pieces[unit.faction][Game.equipment[unit.class]]
-
-				if (animation.time % 2) {
-					items.push({
-						sprite: sprite,
-						position: [ x * 16, y * 16 + 3, -3 ]
-					})
-				}
-
-				for (let i = 0; i < path.length; i++) {
-					let [ x, y ] = path[i]
-					let l = false
-					let r = false
-					let u = false
-					let d = false
-
-					let prev = path[i - 1]
-					if (prev) {
-						let dx = x - prev[0]
-						let dy = y - prev[1]
-						if (dx === 1) {
-							l = true
-						} else if (dx === -1) {
-							r = true
-						}
-
-						if (dy === 1) {
-							u = true
-						} else if (dy === -1) {
-							d = true
-						}
-					}
-
-					let next = path[i + 1]
-					if (next) {
-						let dx = next[0] - x
-						let dy = next[1] - y
-						if (dx === -1) {
-							l = true
-						} else if (dx === 1) {
-							r = true
-						}
-
-						if (dy === -1) {
-							u = true
-						} else if (dy === 1) {
-							d = true
-						}
-					}
-
-					if (l || r || u || d) {
-						let direction = null
-						if (l && r) {
-							direction = "horiz"
-						} else if (u && d) {
-							direction = "vert"
-						} else if (u && l) {
-							direction = "upLeft"
-						} else if (u && r) {
-							direction = "upRight"
-						} else if (d && l) {
-							direction = "downLeft"
-						} else if (d && r) {
-							direction = "downRight"
-						} else if (l && !i) {
-							direction = "leftStub"
-						} else if (r && !i) {
-							direction = "rightStub"
-						} else if (u && !i) {
-							direction = "upStub"
-						} else if (d && !i) {
-							direction = "downStub"
-						} else if (l) {
-							direction = "left"
-						} else if (r) {
-							direction = "right"
-						} else if (u) {
-							direction = "up"
-						} else if (d) {
-							direction = "down"
-						}
-
-						if (direction) {
-							let sprite = sprites.arrows[direction]
-							items.push({
-								sprite: sprite,
-								position: [ x * 16, y * 16 + 2, -2 ]
-							})
-						}
-					}
-				}
-			}
-
 			let duration = 60 * 3
 			let progress = animation.time % duration / duration
 			animation.data.offset = 8 + Math.sin(2 * Math.PI * progress) * 2
+
+			if (!equals(cursor.position, unit.position)) {
+				let path = null
+				for (let node of range.move) {
+					if (equals(node.cell, cursor.position)) {
+						path = node.path
+						break
+					}
+				}
+
+				if (path) {
+					let [ x, y ] = cursor.position
+					let sprite = sprites.pieces[unit.faction][Game.equipment[unit.class]]
+
+					if (animation.time % 2) {
+						items.push({
+							sprite: sprite,
+							position: [ x * 16, y * 16 + 3, -3 ]
+						})
+					}
+
+					for (let i = 0; i < path.length; i++) {
+						let [ x, y ] = path[i]
+						let l = false
+						let r = false
+						let u = false
+						let d = false
+
+						let prev = path[i - 1]
+						if (prev) {
+							let dx = x - prev[0]
+							let dy = y - prev[1]
+							if (dx === 1) {
+								l = true
+							} else if (dx === -1) {
+								r = true
+							}
+
+							if (dy === 1) {
+								u = true
+							} else if (dy === -1) {
+								d = true
+							}
+						}
+
+						let next = path[i + 1]
+						if (next) {
+							let dx = next[0] - x
+							let dy = next[1] - y
+							if (dx === -1) {
+								l = true
+							} else if (dx === 1) {
+								r = true
+							}
+
+							if (dy === -1) {
+								u = true
+							} else if (dy === 1) {
+								d = true
+							}
+						}
+
+						if (l || r || u || d) {
+							let direction = null
+							if (l && r) {
+								direction = "horiz"
+							} else if (u && d) {
+								direction = "vert"
+							} else if (u && l) {
+								direction = "upLeft"
+							} else if (u && r) {
+								direction = "upRight"
+							} else if (d && l) {
+								direction = "downLeft"
+							} else if (d && r) {
+								direction = "downRight"
+							} else if (l && !i) {
+								direction = "leftStub"
+							} else if (r && !i) {
+								direction = "rightStub"
+							} else if (u && !i) {
+								direction = "upStub"
+							} else if (d && !i) {
+								direction = "downStub"
+							} else if (l) {
+								direction = "left"
+							} else if (r) {
+								direction = "right"
+							} else if (u) {
+								direction = "up"
+							} else if (d) {
+								direction = "down"
+							}
+
+							if (direction) {
+								let sprite = sprites.arrows[direction]
+								items.push({
+									sprite: sprite,
+									position: [ x * 16, y * 16 + 2, -2 ]
+								})
+							}
+						}
+					}
+				}
+			}
 		}
 	} else {
 		if (animation) {
@@ -354,6 +356,10 @@ function render(view, state) {
 
 function manhattan(a, b) {
 	return Math.abs(b[0] - a[0]) + Math.abs(b[1] - a[1])
+}
+
+function equals(a, b) {
+	return a[0] === b[0] && a[1] === b[1]
 }
 
 export default View

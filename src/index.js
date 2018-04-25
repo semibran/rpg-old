@@ -68,6 +68,10 @@ function main(spritesheet) {
 	window.addEventListener("mouseup", event => {
 		if (cursor.selection !== null) {
 			let unit = map.units[cursor.selection]
+			if (cursor.position[0] === unit.position[0] && cursor.position[1] === unit.position[1]) {
+				return
+			}
+
 			let range = ranges[cursor.selection]
 			for (let node of range.move) {
 				if (node.cell[0] === cursor.position[0] && node.cell[1] === cursor.position[1]) {
