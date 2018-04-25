@@ -8,10 +8,6 @@ import View from "./view"
 loadImage("sprites.png")
 	.then(main)
 
-const keys = listen(window, {
-	pause: [ "KeyP" ]
-})
-
 let state = {
 	map: maps.test,
 	paused: false,
@@ -20,6 +16,12 @@ let state = {
 		position: null,
 		selection: null,
 		released: false
+	},
+	keys: {
+		prev: {},
+		held: listen(window, {
+			pause: [ "KeyP" ]
+		})
 	}
 }
 
@@ -38,13 +40,19 @@ function main(spritesheet) {
 	requestAnimationFrame(loop)
 
 	function loop() {
-		if (keys.pause === 1) state.paused = !state.paused
+		let keys = state.keys
+		if (keys.held.pause && !keys.prev.pause) {
+			state.paused = !state.paused
+		}
+
 		if (!state.paused) {
 			View.render(view, state)
 		}
 
 		requestAnimationFrame(loop)
 		// setTimeout(loop, 1000 / 15) // debug speed
+
+		keys.prev = Object.assign(keys.prev, keys.held)
 	}
 
 	window.addEventListener("mousemove", event => {
