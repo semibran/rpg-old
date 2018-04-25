@@ -195,7 +195,7 @@ function render(view, state) {
 							let sprite = sprites.arrows[direction]
 							items.push({
 								sprite: sprite,
-								position: [ x * 16, y * 16 - 1, 1 ]
+								position: [ x * 16, y * 16 + 1, -1 ]
 							})
 						}
 					}
@@ -252,7 +252,7 @@ function render(view, state) {
 						if (steps <= animation.data.range - animation.time) {
 							items.push({
 								sprite: sprites.squares.attack,
-								position: [ x * 16, y * 16 - 3, 3 ]
+								position: [ x * 16, y * 16 + 1, -1 ]
 							})
 						}
 					}
@@ -295,7 +295,8 @@ function render(view, state) {
 
 		if (animation && i === animation.data.target) {
 			if ([ "lift", "float", "drop" ].includes(animation.type)) {
-				z = -animation.data.offset
+				y += 2
+				z = -animation.data.offset - 2
 			} else if (animation.type === "move") {
 				let index = Math.floor(animation.time / 4)
 				let mod = animation.time % 4 * 0.25
