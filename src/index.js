@@ -13,7 +13,7 @@ let state = {
 	paused: false,
 	ranges: [],
 	cursor: {
-		position: null,
+		cell: null,
 		selection: null,
 		released: false
 	},
@@ -52,31 +52,31 @@ function main(spritesheet) {
 		requestAnimationFrame(loop)
 		// setTimeout(loop, 1000 / 15) // debug speed
 
-		keys.prev = Object.assign(keys.prev, keys.held)
+		Object.assign(keys.prev, keys.held)
 	}
 
 	window.addEventListener("mousemove", event => {
 		let canvas = view.context.canvas
 		if (event.target === canvas) {
-			cursor.position = scale(event.offsetX, event.offsetY)
+			cursor.cell = scale(event.offsetX, event.offsetY)
 		}
 	})
 
 	window.addEventListener("mousedown", event => {
 		let canvas = view.context.canvas
 		if (event.target === canvas) {
-			if (!cursor.position) {
-				cursor.position = scale(event.offsetX, event.offsetY)
+			if (!cursor.cell) {
+				cursor.cell = scale(event.offsetX, event.offsetY)
 			}
 
 			if (view.animation) {
 				return
 			}
 
-			let [ x, y ] = cursor.position
+			let [ x, y ] = cursor.cell
 			for (let i = 0; i < map.units.length; i++) {
 				let unit = map.units[i]
-				if (unit.position[0] === x && unit.position[1] === y) {
+				if (unit.cell[0] === x && unit.cell[1] === y) {
 					cursor.selection = i
 					break
 				}
@@ -87,7 +87,7 @@ function main(spritesheet) {
 	window.addEventListener("mouseup", event => {
 		if (cursor.selection !== null) {
 			let unit = map.units[cursor.selection]
-			if (cursor.position[0] === unit.position[0] && cursor.position[1] === unit.position[1]) {
+			if (cursor.cell[0] === unit.cell[0] && cursor.cell[1] === unit.cell[1]) {
 				if (!cursor.released) {
 					cursor.released = true
 					return
@@ -100,16 +100,13 @@ function main(spritesheet) {
 
 			let range = ranges[cursor.selection]
 			for (let node of range.move) {
-				if (node.cell[0] === cursor.position[0] && node.cell[1] === cursor.position[1]) {
-					unit.position = cursor.position
-
-					view.animation = {
+				if (node.cell[0] === cursor.cell[0] && node.cell[1] === cursor.cell[1]) {
+					unit.cell = cursor.cell
+					view.cache.animation = {
 						type: "move",
 						time: 0,
-						data: {
-							target: cursor.selection,
-							path: node.path
-						}
+						target: cursor.selection,
+						path: node.path
 					}
 
 					for (let i = 0; i < map.units.length; i++) {

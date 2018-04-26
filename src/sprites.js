@@ -3,36 +3,36 @@ import extract from "../lib/img-extract"
 import pixels from "../lib/pixels"
 import Canvas from "../lib/canvas"
 
-export default function disassemble(spritesheet) {
+export default function normalize(spritesheet) {
+	let sprites = disassemble(spritesheet, sourcemap)
+	return {
+		tiles:  sprites.tiles,
+		pieces: pieces(sprites.piece),
+		ui:     ui(sprites.ui),
+	}
+}
+
+function disassemble(spritesheet, sourcemap) {
 	let sprites = {}
 	for (let id in sourcemap) {
-		let [ x, y, w, h ] = sourcemap[id]
-		sprites[id] = extract(spritesheet, x, y, w, h)
+		if (Array.isArray(sourcemap[id])) {
+			let [ x, y, w, h ] = sourcemap[id]
+			sprites[id] = extract(spritesheet, x, y, w, h)
+		} else {
+			sprites[id] = disassemble(spritesheet, sourcemap[id])
+		}
 	}
 
-	sprites.squares = {
-		attack: extract(sprites.squares, 16, 0, 16, 16),
-		move: extract(sprites.squares, 0, 0, 16, 16)
-	}
+	return sprites
+}
 
-	sprites.arrows = {
-		left:      extract(sprites.arrows,  0,  0, 16, 16),
-		right:     extract(sprites.arrows, 16,  0, 16, 16),
-		up:        extract(sprites.arrows, 32,  0, 16, 16),
-		down:      extract(sprites.arrows, 48,  0, 16, 16),
-		leftStub:  extract(sprites.arrows,  0, 16, 16, 16),
-		rightStub: extract(sprites.arrows, 16, 16, 16, 16),
-		upStub:    extract(sprites.arrows, 32, 16, 16, 16),
-		downStub:  extract(sprites.arrows, 48, 16, 16, 16),
-		upLeft:    extract(sprites.arrows,  0, 32, 16, 16),
-		upRight:   extract(sprites.arrows, 16, 32, 16, 16),
-		downLeft:  extract(sprites.arrows, 32, 32, 16, 16),
-		downRight: extract(sprites.arrows, 48, 32, 16, 16),
-		horiz:     extract(sprites.arrows,  0, 48, 16, 16),
-		vert:      extract(sprites.arrows, 16, 48, 16, 16),
+function pieces(sprites) {
+	let pieces = {
+		player: {},
+		enemy: {},
+		ally: {},
+		shadow: sprites.shadow
 	}
-
-	sprites.pieces = { player: {}, enemy: {}, ally: {} }
 
 	let palette = sprites.palette
 		.getContext("2d")
@@ -60,14 +60,12 @@ export default function disassemble(spritesheet) {
 		ally:   [ colors.lime, colors.green, colors.teal ]
 	}
 
-	let equipments = [ "sword", "lance", "axe", "bow", "dagger", "shield", "hat" ]
 	for (let faction in palettes) {
 		let palette = palettes[faction]
-		for (let equipment of equipments) {
-			let source = sprites["symbols/" + equipment]
-
+		for (let name in sprites.symbols) {
+			let source = sprites.symbols[name]
 			let piece = Canvas(16, 16)
-			let base = sprites.piece
+			let base = sprites.base
 				.getContext("2d")
 				.getImageData(0, 0, 16, 16)
 
@@ -88,9 +86,44 @@ export default function disassemble(spritesheet) {
 			symbol.putImageData(template, 0, 0)
 			piece.drawImage(symbol.canvas, 5, 4)
 
-			sprites.pieces[faction][equipment] = piece.canvas
+			pieces[faction][name] = piece.canvas
 		}
 	}
 
-	return sprites
+	return pieces
+}
+
+function ui(sprites) {
+	return {
+		cursor:  sprites.cursor,
+		swords:  sprites.swords,
+		squares: squares(sprites.squares),
+		arrows:  arrows(sprites.arrows)
+	}
+}
+
+function squares(image) {
+	return {
+		move:   extract(image,  0, 0, 16, 16),
+		attack: extract(image, 16, 0, 16, 16)
+	}
+}
+
+function arrows(image) {
+	return {
+		left:      extract(image,  0,  0, 16, 16),
+		right:     extract(image, 16,  0, 16, 16),
+		up:        extract(image, 32,  0, 16, 16),
+		down:      extract(image, 48,  0, 16, 16),
+		leftStub:  extract(image,  0, 16, 16, 16),
+		rightStub: extract(image, 16, 16, 16, 16),
+		upStub:    extract(image, 32, 16, 16, 16),
+		downStub:  extract(image, 48, 16, 16, 16),
+		upLeft:    extract(image,  0, 32, 16, 16),
+		upRight:   extract(image, 16, 32, 16, 16),
+		downLeft:  extract(image, 32, 32, 16, 16),
+		downRight: extract(image, 48, 32, 16, 16),
+		horiz:     extract(image,  0, 48, 16, 16),
+		vert:      extract(image, 16, 48, 16, 16),
+	}
 }
