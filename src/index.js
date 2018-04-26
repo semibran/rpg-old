@@ -69,7 +69,7 @@ function main(spritesheet) {
 				cursor.cell = scale(event.offsetX, event.offsetY)
 			}
 
-			if (view.animation) {
+			if (view.animation || cursor.selection !== null) {
 				return
 			}
 
@@ -87,7 +87,7 @@ function main(spritesheet) {
 	window.addEventListener("mouseup", event => {
 		if (cursor.selection !== null) {
 			let unit = map.units[cursor.selection]
-			if (cursor.cell[0] === unit.cell[0] && cursor.cell[1] === unit.cell[1]) {
+			if (equals(cursor.cell, unit.cell)) {
 				if (!cursor.released) {
 					cursor.released = true
 					return
@@ -100,7 +100,7 @@ function main(spritesheet) {
 
 			let range = ranges[cursor.selection]
 			for (let node of range.move) {
-				if (node.cell[0] === cursor.cell[0] && node.cell[1] === cursor.cell[1]) {
+				if (equals(cursor.cell, node.cell)) {
 					unit.cell = cursor.cell
 					view.cache.animation = {
 						type: "move",
@@ -129,4 +129,8 @@ function main(spritesheet) {
 		let height = canvas.height
 		return [ Math.floor(x / width * 16), Math.floor(y / height * 16) ]
 	}
+}
+
+function equals(a, b) {
+	return a[0] === b[0] && a[1] === b[1]
 }

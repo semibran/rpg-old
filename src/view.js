@@ -7,8 +7,8 @@ function View(width, height, sprites) {
 		sprites: sprites,
 		cache: {
 			time: 0,
-			animation: null,
-			cursor: null
+			dest: null,
+			animation: null
 		}
 	}
 }
@@ -142,9 +142,9 @@ function render(view, state) {
 			}
 
 			if (dest) {
-				cache.cursor = dest
+				cache.dest = dest
 			} else {
-				dest = cache.cursor
+				dest = cache.dest
 			}
 
 			let target = null
@@ -163,7 +163,7 @@ function render(view, state) {
 					for (let node of range.move) {
 						if (manhattan(node.cell, target.cell) <= weapon.range) {
 							dest = node
-							cache.cursor = dest
+							cache.dest = dest
 							break
 						}
 					}
@@ -174,8 +174,8 @@ function render(view, state) {
 					sprite: sprite,
 					position: [
 						target.cell[0] * 16 + 8 - sprite.width / 2,
-						target.cell[1] * 16 + 8 - sprite.height / 2,
-						-16 + offset
+						target.cell[1] * 16 + 8 - sprite.height / 2 + 5,
+						-5 - 20 + offset
 					]
 				})
 			}
@@ -284,7 +284,7 @@ function render(view, state) {
 		if (cache.animation) {
 			let unit = map.units[cache.animation.target]
 			if (cache.animation.type === "move") {
-				if (cache.animation.time >= cache.cursor.path.length * 4 - 4) {
+				if (cache.animation.time >= cache.dest.path.length * 4 - 4) {
 					cache.animation = {
 						type: "drop",
 						time: 0,
@@ -322,7 +322,7 @@ function render(view, state) {
 				z = -cache.animation.offset
 			} else if (cache.animation.type === "move") {
 				let index = Math.floor(cache.animation.time / 4)
-				let path = cache.cursor.path
+				let path = cache.dest.path
 				let mod = cache.animation.time % 4 * 0.25
 				let cell = path[index]
 				let next = path[index + 1]
