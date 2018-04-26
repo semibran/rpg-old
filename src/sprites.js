@@ -95,11 +95,21 @@ function pieces(sprites) {
 
 function ui(sprites) {
 	return {
-		cursor:  sprites.cursor,
-		swords:  sprites.swords,
+		cursor:  cursor(sprites.cursor),
 		squares: squares(sprites.squares),
-		arrows:  arrows(sprites.arrows)
+		arrows:  arrows(sprites.arrows),
+		swords:  sprites.swords
 	}
+}
+
+function cursor(image) {
+	var frames = image.width / 16
+	var animation = new Array(frames)
+	for (var i = 0; i < frames; i++) {
+		animation[i] = extract(image, i * 16, 0, 16, 16)
+	}
+
+	return animation
 }
 
 function squares(image) {

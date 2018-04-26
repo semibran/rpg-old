@@ -6,6 +6,7 @@ function View(width, height, sprites) {
 		context: Canvas(width, height),
 		sprites: sprites,
 		cache: {
+			time: 0,
 			animation: null,
 			cursor: null
 		}
@@ -17,6 +18,25 @@ function render(view, state) {
 	let { map, ranges, cursor } = state
 
 	let items = []
+
+	if (cursor.cell) {
+		let [ x, y ] = cursor.cell
+		let z = 0
+		let i = y * map.layout.size[0] + x
+		let id = map.layout.data[i]
+		let tile = map.tiles[id]
+		if (tile.name === "wall") {
+			z = -8
+		}
+
+		let frame = Math.floor(cache.time / 30) % sprites.ui.cursor.length
+
+		items.push({
+			sprite: sprites.ui.cursor[frame],
+			position: [ x * 16, y * 16 + 3, -3 + z ]
+		})
+	}
+
 	for (let y = 0; y < map.layout.size[1]; y++) {
 		for (let x = 0; x < map.layout.size[0]; x++) {
 			let i = y * map.layout.size[0] + x
@@ -32,10 +52,6 @@ function render(view, state) {
 				})
 			}
 		}
-	}
-
-	if (cache.animation) {
-		cache.animation.time++
 	}
 
 	if (cursor.selection !== null) {
@@ -172,7 +188,7 @@ function render(view, state) {
 				if (cache.animation.time % 2) {
 					items.push({
 						sprite: sprite,
-						position: [ x * 16, y * 16 + 3, -3 - height - offset ]
+						position: [ x * 16, y * 16 + 4, -4 - height - offset ]
 					})
 
 					items.push({
@@ -323,7 +339,7 @@ function render(view, state) {
 
 			items.push({
 				sprite: sprite,
-				position: [ x, y + 3, z - 3 ]
+				position: [ x, y + 4, z - 4 ]
 			})
 		} else {
 			items.push({
@@ -348,6 +364,12 @@ function render(view, state) {
 	for (let item of items) {
 		let [ x, y, z ] = item.position
 		context.drawImage(item.sprite, Math.round(x), Math.round(y + z))
+	}
+
+	cache.time++
+
+	if (cache.animation) {
+		cache.animation.time++
 	}
 }
 
