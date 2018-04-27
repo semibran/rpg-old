@@ -160,11 +160,18 @@ function render(view, state) {
 			if (target) {
 				// if target is out of range from given destination
 				if (manhattan(dest.cell, target.cell) > weapon.range) {
-					for (let node of range.move) {
-						if (manhattan(node.cell, target.cell) <= weapon.range) {
-							dest = node
-							cache.dest = dest
-							break
+					if (manhattan(unit.cell, target.cell) <= weapon.range) {
+						dest = cache.dest = {
+							cell: unit.cell,
+							path: null
+						}
+					} else {
+						for (let node of range.move) {
+							if (manhattan(node.cell, target.cell) <= weapon.range) {
+								dest = node
+								cache.dest = dest
+								break
+							}
 						}
 					}
 				}

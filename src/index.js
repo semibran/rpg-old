@@ -65,22 +65,31 @@ function main(spritesheet) {
 	window.addEventListener("mousedown", event => {
 		let canvas = view.context.canvas
 		if (event.target === canvas) {
+			// define cursor cell if not already existent
 			if (!cursor.cell) {
 				cursor.cell = scale(event.offsetX, event.offsetY)
 			}
 
-			if (view.animation || cursor.selection !== null) {
+			// ignore click if a piece is already selected
+			if (cursor.selection !== null || view.animation) {
 				return
 			}
 
 			let [ x, y ] = cursor.cell
 			for (let i = 0; i < map.units.length; i++) {
 				let unit = map.units[i]
-				if (unit.cell[0] === x && unit.cell[1] === y) {
+				if (equals(unit.cell, cursor.cell)) {
 					cursor.selection = i
 					break
 				}
 			}
+
+			/*
+			if (cursor.selection !== null) {
+				view.animations.piece.push([
+					Animation("lift")
+				])
+			}*/
 		}
 	})
 
