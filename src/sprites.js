@@ -64,7 +64,9 @@ function pieces(sprites) {
 		let palette = palettes[faction]
 		for (let name in sprites.symbols) {
 			let source = sprites.symbols[name]
-			let piece = Canvas(16, 16)
+			let symbol = Canvas(source.width, source.height)
+			symbol.drawImage(source, 0, 0)
+
 			let base = sprites.base
 				.getContext("2d")
 				.getImageData(0, 0, 16, 16)
@@ -72,10 +74,9 @@ function pieces(sprites) {
 			pixels.replace(base, colors.cyan, palette[0])
 			pixels.replace(base, colors.blue, palette[1])
 			pixels.replace(base, colors.navy, palette[2])
-			piece.putImageData(base, 0, 0)
 
-			let symbol = Canvas(source.width, source.height)
-			symbol.drawImage(source, 0, 0)
+			let piece = Canvas(base.width, base.height)
+			piece.putImageData(base, 0, 0)
 
 			let template = symbol.getImageData(0, 0, source.width, source.height)
 			pixels.replace(template, colors.white, palette[0])
@@ -95,11 +96,67 @@ function pieces(sprites) {
 
 function ui(sprites) {
 	return {
+		typeface: typeface(sprites.typeface),
 		cursor:  cursor(sprites.cursor),
-		squares: squares(sprites.squares),
-		arrows:  arrows(sprites.arrows),
-		swords:  sprites.swords
+		swords:  sprites.swords,
+		box: {
+			topLeft:     extract(sprites.box,  0,  0, 16, 16),
+			top:         extract(sprites.box, 16,  0, 16, 16),
+			topRight:    extract(sprites.box, 32,  0, 16, 16),
+			left:        extract(sprites.box,  0, 16, 16, 16),
+			center:      extract(sprites.box, 16, 16, 16, 16),
+			right:       extract(sprites.box, 32, 16, 16, 16),
+			bottomLeft:  extract(sprites.box,  0, 32, 16, 16),
+			bottom:      extract(sprites.box, 16, 32, 16, 16),
+			bottomRight: extract(sprites.box, 32, 32, 16, 16),
+		},
+		squares: {
+			move:   extract(sprites.squares,  0, 0, 16, 16),
+			attack: extract(sprites.squares, 16, 0, 16, 16)
+		},
+		arrows: {
+			left:      extract(sprites.arrows,  0,  0, 16, 16),
+			right:     extract(sprites.arrows, 16,  0, 16, 16),
+			up:        extract(sprites.arrows, 32,  0, 16, 16),
+			down:      extract(sprites.arrows, 48,  0, 16, 16),
+			leftStub:  extract(sprites.arrows,  0, 16, 16, 16),
+			rightStub: extract(sprites.arrows, 16, 16, 16, 16),
+			upStub:    extract(sprites.arrows, 32, 16, 16, 16),
+			downStub:  extract(sprites.arrows, 48, 16, 16, 16),
+			upLeft:    extract(sprites.arrows,  0, 32, 16, 16),
+			upRight:   extract(sprites.arrows, 16, 32, 16, 16),
+			downLeft:  extract(sprites.arrows, 32, 32, 16, 16),
+			downRight: extract(sprites.arrows, 48, 32, 16, 16),
+			horiz:     extract(sprites.arrows,  0, 48, 16, 16),
+			vert:      extract(sprites.arrows, 16, 48, 16, 16),
+		}
 	}
+}
+
+function typeface(image) {
+	const cols = 10
+	const rows = 7
+	const width = 8
+	const height = 8
+	const sequence =
+		`0123456789` +
+		`ABCDEFGHIJ` +
+		`KLMNOPQRST` +
+		`UVWXYZ,.!?` +
+		`abcdefghij` +
+		`klmnopqrst` +
+		`uvwxyz'"  `
+
+	let sprites = {}
+	let i = 0
+	for (let y = 0; y < rows; y++) {
+		for (let x = 0; x < cols; x++) {
+			let char = sequence[i++]
+			sprites[char] = extract(image, x * width, y * height, width, height)
+		}
+	}
+
+	return sprites
 }
 
 function cursor(image) {
@@ -110,30 +167,4 @@ function cursor(image) {
 	}
 
 	return animation
-}
-
-function squares(image) {
-	return {
-		move:   extract(image,  0, 0, 16, 16),
-		attack: extract(image, 16, 0, 16, 16)
-	}
-}
-
-function arrows(image) {
-	return {
-		left:      extract(image,  0,  0, 16, 16),
-		right:     extract(image, 16,  0, 16, 16),
-		up:        extract(image, 32,  0, 16, 16),
-		down:      extract(image, 48,  0, 16, 16),
-		leftStub:  extract(image,  0, 16, 16, 16),
-		rightStub: extract(image, 16, 16, 16, 16),
-		upStub:    extract(image, 32, 16, 16, 16),
-		downStub:  extract(image, 48, 16, 16, 16),
-		upLeft:    extract(image,  0, 32, 16, 16),
-		upRight:   extract(image, 16, 32, 16, 16),
-		downLeft:  extract(image, 32, 32, 16, 16),
-		downRight: extract(image, 48, 32, 16, 16),
-		horiz:     extract(image,  0, 48, 16, 16),
-		vert:      extract(image, 16, 48, 16, 16),
-	}
 }
