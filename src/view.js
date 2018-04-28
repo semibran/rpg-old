@@ -18,7 +18,7 @@ function render(view, state) {
 	let { context, sprites, cache } = view
 	let { map, ranges, cursor } = state
 
-	let order = [ "floors", "shadows", "pieces", "squares", "arrows", "fg", "actions", "dialogs" ]
+	let order = [ "tiles", "shadows", "pieces", "squares", "arrows", "fg", "actions", "dialogs" ]
 	let layers = {}
 	for (let name of order) {
 		layers[name] = []
@@ -30,10 +30,6 @@ function render(view, state) {
 		let i = y * map.layout.size[0] + x
 		let id = map.layout.data[i]
 		let tile = map.tiles[id]
-		if (tile.name === "wall") {
-			z = -8
-		}
-
 		let frame = Math.floor(cache.time / 30) % sprites.ui.cursor.length
 
 		layers.fg.push({
@@ -50,14 +46,14 @@ function render(view, state) {
 			let sprite = sprites.tiles[tile.name]
 
 			if (!tile.solid) {
-				layers.floors.push({
+				layers.tiles.push({
 					image: sprite,
-					position: [ x * 16, y * 16, ]
+					position: [ x * 16, y * 16 ]
 				})
 			} else {
-				layers.fg.push({
+				layers.tiles.push({
 					image: sprite,
-					position: [ x * 16, y * 16, -8 ]
+					position: [ x * 16, y * 16 ]
 				})
 			}
 		}
@@ -84,13 +80,17 @@ function render(view, state) {
 				.drawImage(symbol, 16, 16)
 		}
 
+		let x = unit.cell[0] >= 8
+			? 8
+			: context.canvas.width - cache.dialog.width - 8
+
 		let y = unit.cell[1] >= 8
 			? 8
 			: context.canvas.height - cache.dialog.height - 8
 
 		layers.dialogs.push({
 			image: cache.dialog,
-			position: [ 8, y ]
+			position: [ x, y ]
 		})
 
 		if (!cache.animation) {
@@ -235,7 +235,7 @@ function render(view, state) {
 
 					layers.shadows.push({
 						image: sprites.pieces.shadow,
-						position: [ x * 16, y * 16, 0 ]
+						position: [ x * 16, y * 16 + 4, 0 ]
 					})
 				}
 
@@ -399,7 +399,7 @@ function render(view, state) {
 		) {
 			layers.shadows.push({
 				image: sprites.pieces.shadow,
-				position: [ x, y + 3, 0 ]
+				position: [ x + 1, y + 4, 0 ]
 			})
 		}
 	}
