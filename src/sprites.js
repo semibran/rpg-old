@@ -95,10 +95,10 @@ function pieces(sprites) {
 }
 
 function ui(sprites) {
-	return {
-		typeface: typeface(sprites.typeface),
-		cursor:  cursor(sprites.cursor),
+	let ui = {
 		swords:  sprites.swords,
+		cursor:  cursor(sprites.cursor),
+		typeface: typeface(sprites.typeface),
 		box: {
 			topLeft:     extract(sprites.box,  0,  0, 16, 16),
 			top:         extract(sprites.box, 16,  0, 16, 16),
@@ -131,6 +131,77 @@ function ui(sprites) {
 			vert:      extract(sprites.arrows, 16, 48, 16, 16),
 		}
 	}
+
+	ui.Text = Text
+	ui.Box = Box
+	ui.TextBox = TextBox
+
+	return ui
+
+	function Text(content) {
+		let canvas = document.createElement("canvas")
+		canvas.width = content.length * 8
+		canvas.height = 8
+
+		let context = canvas.getContext("2d")
+		for (let i = 0; i < content.length; i++) {
+			let char = content[i]
+			let sprite = ui.typeface[char]
+			context.drawImage(sprite, i * 8, 0)
+		}
+
+		return canvas
+	}
+
+	function Box(width, height) {
+		const cols = Math.ceil(width / 16)
+		const rows = Math.ceil(height / 16)
+
+		let canvas = document.createElement("canvas")
+		let context = canvas.getContext("2d")
+		canvas.width = width
+		canvas.height = height
+
+		for (let x = 1; x < cols - 1; x++) {
+			context.drawImage(ui.box.top,    x * 16,           0)
+			context.drawImage(ui.box.bottom, x * 16, height - 16)
+		}
+
+		for (let y = 1; y < rows - 1; y++) {
+			context.drawImage(ui.box.left,           0, y * 16)
+			context.drawImage(ui.box.right, width - 16, y * 16)
+		}
+
+		context.drawImage(ui.box.topLeft,                     0,                  0)
+		context.drawImage(ui.box.topRight,    canvas.width - 16,                  0)
+		context.drawImage(ui.box.bottomLeft,                  0, canvas.height - 16)
+		context.drawImage(ui.box.bottomRight, canvas.width - 16, canvas.height - 16)
+
+		return canvas
+	}
+
+	function TextBox(lines) {
+		const lengths = lines.map(line => line.length)
+		const longest = Math.max(...lengths)
+		const width   = longest * 8
+		const height  = (lines.length * 2 - 1) * 8
+
+		let box = Box(width + 32, height + 32)
+		let canvas = document.createElement("canvas")
+		let context = canvas.getContext("2d")
+		canvas.width = width
+		canvas.height = height
+
+		for (let y = 0; y < lines.length; y++) {
+			let line = lines[y]
+			context.drawImage(Text(line), 0, y * 16)
+		}
+
+		box.getContext("2d")
+			.drawImage(canvas, 16, 16)
+
+		return box
+	}
 }
 
 function typeface(image) {
@@ -147,16 +218,16 @@ function typeface(image) {
 		`klmnopqrst` +
 		`uvwxyz'"  `
 
-	let sprites = {}
+	let typeface = {}
 	let i = 0
 	for (let y = 0; y < rows; y++) {
 		for (let x = 0; x < cols; x++) {
 			let char = sequence[i++]
-			sprites[char] = extract(image, x * width, y * height, width, height)
+			typeface[char] = extract(image, x * width, y * height, width, height)
 		}
 	}
 
-	return sprites
+	return typeface
 }
 
 function cursor(image) {
