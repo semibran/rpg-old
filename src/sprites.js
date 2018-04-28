@@ -31,6 +31,7 @@ function pieces(sprites) {
 		player: {},
 		enemy: {},
 		ally: {},
+		symbols: sprites.symbols,
 		shadow: sprites.shadow
 	}
 
@@ -170,6 +171,10 @@ function ui(sprites) {
 		for (let y = 1; y < rows - 1; y++) {
 			context.drawImage(ui.box.left,           0, y * 16)
 			context.drawImage(ui.box.right, width - 16, y * 16)
+
+			for (let x = 1; x < cols - 1; x++) {
+				context.drawImage(ui.box.center, x * 16, y * 16)
+			}
 		}
 
 		context.drawImage(ui.box.topLeft,                     0,                  0)
@@ -184,7 +189,7 @@ function ui(sprites) {
 		const lengths = lines.map(line => line.length)
 		const longest = Math.max(...lengths)
 		const width   = longest * 8
-		const height  = (lines.length * 2 - 1) * 8
+		const height  = lines.length * 8
 
 		let box = Box(width + 32, height + 32)
 		let canvas = document.createElement("canvas")
@@ -194,7 +199,7 @@ function ui(sprites) {
 
 		for (let y = 0; y < lines.length; y++) {
 			let line = lines[y]
-			context.drawImage(Text(line), 0, y * 16)
+			context.drawImage(Text(line), 0, y * 8)
 		}
 
 		box.getContext("2d")
@@ -216,7 +221,7 @@ function typeface(image) {
 		`UVWXYZ,.!?` +
 		`abcdefghij` +
 		`klmnopqrst` +
-		`uvwxyz'"  `
+		`uvwxyz'"/ `
 
 	let typeface = {}
 	let i = 0

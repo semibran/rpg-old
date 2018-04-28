@@ -8,6 +8,7 @@ function View(width, height, sprites) {
 		cache: {
 			time: 0,
 			dest: null,
+			textbox: null,
 			animation: null
 		}
 	}
@@ -57,6 +58,23 @@ function render(view, state) {
 	if (cursor.selection !== null) {
 		let unit = map.units[cursor.selection]
 		let weapon = Game.weapons[Game.units[unit.class].weapon]
+
+		if (!cache.textbox) {
+			let symbol = sprites.pieces.symbols[Game.equipment[unit.class]]
+
+			cache.textbox = sprites.ui.TextBox([
+				`  ${ unit.class.toUpperCase() }`,
+				``,
+				`HP  3/3`,
+				`STR ???`,
+				`INT ???`,
+				`AGI ???`,
+				`MOV ${ Game.units[unit.class].move }`
+			])
+
+			cache.textbox.getContext("2d")
+				.drawImage(symbol, 16, 16)
+		}
 
 		if (!cache.animation) {
 			cache.animation = {
@@ -288,6 +306,8 @@ function render(view, state) {
 			}
 		}
 	} else {
+		cache.textbox = null
+
 		if (cache.animation) {
 			let unit = map.units[cache.animation.target]
 			if (cache.animation.type === "move") {
@@ -371,6 +391,15 @@ function render(view, state) {
 	for (let item of items) {
 		let [ x, y, z ] = item.position
 		context.drawImage(item.sprite, Math.round(x), Math.round(y + z))
+	}
+
+	if (cache.textbox && cursor.selection !== null) {
+		let unit = map.units[cursor.selection]
+		let y = unit.cell[1] >= 8
+			? 8
+			: context.canvas.height - cache.textbox.height - 8
+
+		context.drawImage(cache.textbox, 8, y)
 	}
 
 	cache.time++

@@ -41,16 +41,6 @@ function main(spritesheet) {
 	View.render(view, state)
 	requestAnimationFrame(loop)
 
-	let box = sprites.ui.TextBox([
-		`MAGE's attack`,
-		`WARRIOR received 2 damage.`,
-		`WARRIOR's counterattack`,
-		`MAGE suffered 3 damage!`,
-		`MAGE has perished.`
-	])
-
-	root.appendChild(box)
-
 	function loop() {
 		let keys = state.keys
 		if (keys.held.pause && !keys.prev.pause) {
