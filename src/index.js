@@ -30,7 +30,7 @@ let state = {
 function main(spritesheet) {
 	let { map, ranges, cursor } = state
 	let sprites = disassemble(spritesheet)
-	let view = View(map.layout.size[0] * 16, map.layout.size[1] * 16, sprites)
+	let view = View(256, 240, sprites)
 	root.appendChild(view.context.canvas)
 
 	for (let i = 0; i < map.units.length; i++) {
@@ -135,10 +135,7 @@ function main(spritesheet) {
 	})
 
 	function scale(x, y) {
-		let canvas = view.context.canvas
-		let width = canvas.width
-		let height = canvas.height
-		return [ Math.floor(x / width * 16), Math.floor(y / height * 16) ]
+		return [ Math.floor(x / 256 * 16), Math.floor(y / 256 * 16) ]
 	}
 }
 

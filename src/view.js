@@ -8,7 +8,7 @@ function View(width, height, sprites) {
 		cache: {
 			time: 0,
 			dest: null,
-			textbox: null,
+			dialog: null,
 			animation: null
 		}
 	}
@@ -18,7 +18,11 @@ function render(view, state) {
 	let { context, sprites, cache } = view
 	let { map, ranges, cursor } = state
 
-	let items = []
+	let order = [ "floors", "shadows", "pieces", "squares", "arrows", "walls", "floating", "actions", "dialogs" ]
+	let layers = {}
+	for (let name of order) {
+		layers[name] = []
+	}
 
 	if (cursor.cell) {
 		let [ x, y ] = cursor.cell
@@ -32,9 +36,9 @@ function render(view, state) {
 
 		let frame = Math.floor(cache.time / 30) % sprites.ui.cursor.length
 
-		items.push({
-			sprite: sprites.ui.cursor[frame],
-			position: [ x * 16, y * 16 + 3, -3 + z ]
+		layers.walls.push({
+			image: sprites.ui.cursor[frame],
+			position: [ x * 16, y * 16 + 1, z - 1 ]
 		})
 	}
 
@@ -44,11 +48,15 @@ function render(view, state) {
 			let id = map.layout.data[i]
 			let tile = map.tiles[id]
 			let sprite = sprites.tiles[tile.name]
+
 			if (!tile.solid) {
-				context.drawImage(sprite, x * 16, y * 16)
+				layers.floors.push({
+					image: sprite,
+					position: [ x * 16, y * 16, ]
+				})
 			} else {
-				items.push({
-					sprite: sprite,
+				layers.walls.push({
+					image: sprite,
 					position: [ x * 16, y * 16, -8 ]
 				})
 			}
@@ -59,10 +67,10 @@ function render(view, state) {
 		let unit = map.units[cursor.selection]
 		let weapon = Game.weapons[Game.units[unit.class].weapon]
 
-		if (!cache.textbox) {
+		if (!cache.dialog) {
 			let symbol = sprites.pieces.symbols[Game.equipment[unit.class]]
 
-			cache.textbox = sprites.ui.TextBox([
+			cache.dialog = sprites.ui.TextBox([
 				`  ${ unit.class.toUpperCase() }`,
 				``,
 				`HP  3/3`,
@@ -72,9 +80,18 @@ function render(view, state) {
 				`MOV ${ Game.units[unit.class].move }`
 			])
 
-			cache.textbox.getContext("2d")
+			cache.dialog.getContext("2d")
 				.drawImage(symbol, 16, 16)
 		}
+
+		let y = unit.cell[1] >= 8
+			? 8
+			: context.canvas.height - cache.dialog.height - 8
+
+		layers.dialogs.push({
+			image: cache.dialog,
+			position: [ 8, y ]
+		})
 
 		if (!cache.animation) {
 			cache.animation = {
@@ -120,9 +137,9 @@ function render(view, state) {
 
 				let steps = manhattan(node.cell, unit.cell)
 				if (steps <= cache.animation.time) {
-					items.push({
-						sprite: sprites.ui.squares.attack,
-						position: [ x * 16, y * 16 + 2, -2 ]
+					layers.squares.push({
+						image: sprites.ui.squares.attack,
+						position: [ x * 16, y * 16, 0 ]
 					})
 				}
 			}
@@ -131,8 +148,8 @@ function render(view, state) {
 				let [ x, y ] = node.cell
 				let steps = manhattan(node.cell, unit.cell)
 				if (steps <= cache.animation.time) {
-					items.push({
-						sprite: sprites.ui.squares.move,
+					layers.squares.push({
+						image: sprites.ui.squares.move,
 						position: [ x * 16, y * 16, 0 ]
 					})
 				}
@@ -195,12 +212,12 @@ function render(view, state) {
 				}
 
 				let sprite = sprites.ui.swords
-				items.push({
-					sprite: sprite,
+				layers.actions.push({
+					image: sprite,
 					position: [
 						target.cell[0] * 16 + 8 - sprite.width / 2,
-						target.cell[1] * 16 + 8 - sprite.height / 2 + 5,
-						-5 - 20 + offset
+						target.cell[1] * 16 + 8 - sprite.height / 2,
+						-20 + offset,
 					]
 				})
 			}
@@ -211,14 +228,14 @@ function render(view, state) {
 				let sprite = sprites.pieces[unit.faction][Game.equipment[unit.class]]
 
 				if (cache.animation.time % 2) {
-					items.push({
-						sprite: sprite,
-						position: [ x * 16, y * 16 + 4, -4 - height - offset ]
+					layers.floating.push({
+						image: sprite,
+						position: [ x * 16, y * 16, -height - offset ]
 					})
 
-					items.push({
-						sprite: sprites.pieces.shadow,
-						position: [ x * 16, y * 16, 3 ]
+					layers.shadows.push({
+						image: sprites.pieces.shadow,
+						position: [ x * 16, y * 16, 0 ]
 					})
 				}
 
@@ -296,9 +313,9 @@ function render(view, state) {
 						}
 
 						if (direction) {
-							items.push({
-								sprite: sprites.ui.arrows[direction],
-								position: [ x * 16, y * 16 + 2, -2 ]
+							layers.arrows.push({
+								image: sprites.ui.arrows[direction],
+								position: [ x * 16, y * 16, 0 ]
 							})
 						}
 					}
@@ -306,7 +323,7 @@ function render(view, state) {
 			}
 		}
 	} else {
-		cache.textbox = null
+		cache.dialog = null
 
 		if (cache.animation) {
 			let unit = map.units[cache.animation.target]
@@ -364,42 +381,40 @@ function render(view, state) {
 				}
 			}
 
-			items.push({
-				sprite: sprite,
-				position: [ x, y + 4, z - 4 ]
+			layers.floating.push({
+				image: sprite,
+				position: [ x, y, z ]
 			})
 		} else {
-			items.push({
-				sprite: sprite,
-				position: [ x, y + 1, z - 1 ]
+			layers.pieces.push({
+				image: sprite,
+				position: [ x, y, z ]
 			})
 		}
+
 
 		if (!cache.animation
 			|| cache.animation && cache.animation.target !== i
 			|| cache.animation && cache.animation.target === i && cache.animation.time % 2
 		) {
-			items.push({
-				sprite: sprites.pieces.shadow,
-				position: [ x, y, 3 ]
+			layers.shadows.push({
+				image: sprites.pieces.shadow,
+				position: [ x, y + 3, 0 ]
 			})
 		}
 	}
 
-	items.sort((a, b) => a.position[1] - b.position[1])
+	for (let name of order) {
+		let layer = layers[name]
+		layer.sort((a, b) =>
+			(a.position[1] - (a.position[2] || 0)) -
+			(b.position[1] - (b.position[2] || 0))
+		)
 
-	for (let item of items) {
-		let [ x, y, z ] = item.position
-		context.drawImage(item.sprite, Math.round(x), Math.round(y + z))
-	}
-
-	if (cache.textbox && cursor.selection !== null) {
-		let unit = map.units[cursor.selection]
-		let y = unit.cell[1] >= 8
-			? 8
-			: context.canvas.height - cache.textbox.height - 8
-
-		context.drawImage(cache.textbox, 8, y)
+		for (let element of layer) {
+			let [ x, y, z ] = element.position
+			context.drawImage(element.image, Math.round(x), Math.round(y + (z || 0)))
+		}
 	}
 
 	cache.time++
