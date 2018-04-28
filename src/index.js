@@ -108,8 +108,10 @@ function main(spritesheet) {
 
 	let box = TextBox([
 		`MAGE's attack`,
-		`WARRIOR suffered 2 damage.`,
-		`WARRIOR was defeated.`
+		`WARRIOR received 2 damage.`,
+		`WARRIOR's counterattack`,
+		`MAGE suffered 3 damage!`,
+		`MAGE has perished.`
 	])
 
 	root.appendChild(box)

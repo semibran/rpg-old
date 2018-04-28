@@ -81,11 +81,11 @@ function pieces(sprites) {
 			let template = symbol.getImageData(0, 0, source.width, source.height)
 			pixels.replace(template, colors.white, palette[0])
 			symbol.putImageData(template, 0, 0)
-			piece.drawImage(symbol.canvas, 5, 5)
+			piece.drawImage(symbol.canvas, 4, 4)
 
 			pixels.replace(template, palette[0], palette[2])
 			symbol.putImageData(template, 0, 0)
-			piece.drawImage(symbol.canvas, 5, 4)
+			piece.drawImage(symbol.canvas, 4, 3)
 
 			pieces[faction][name] = piece.canvas
 		}
