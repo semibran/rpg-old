@@ -18,7 +18,7 @@ function render(view, state) {
 	let { context, sprites, cache } = view
 	let { map, ranges, cursor } = state
 
-	let order = [ "floors", "shadows", "pieces", "squares", "arrows", "walls", "floating", "actions", "dialogs" ]
+	let order = [ "floors", "shadows", "pieces", "squares", "arrows", "fg", "actions", "dialogs" ]
 	let layers = {}
 	for (let name of order) {
 		layers[name] = []
@@ -36,7 +36,7 @@ function render(view, state) {
 
 		let frame = Math.floor(cache.time / 30) % sprites.ui.cursor.length
 
-		layers.walls.push({
+		layers.fg.push({
 			image: sprites.ui.cursor[frame],
 			position: [ x * 16, y * 16 + 1, z - 1 ]
 		})
@@ -55,7 +55,7 @@ function render(view, state) {
 					position: [ x * 16, y * 16, ]
 				})
 			} else {
-				layers.walls.push({
+				layers.fg.push({
 					image: sprite,
 					position: [ x * 16, y * 16, -8 ]
 				})
@@ -228,9 +228,9 @@ function render(view, state) {
 				let sprite = sprites.pieces[unit.faction][Game.equipment[unit.class]]
 
 				if (cache.animation.time % 2) {
-					layers.floating.push({
+					layers.fg.push({
 						image: sprite,
-						position: [ x * 16, y * 16, -height - offset ]
+						position: [ x * 16, y * 16 + 2, -2 - height - offset ]
 					})
 
 					layers.shadows.push({
@@ -381,9 +381,9 @@ function render(view, state) {
 				}
 			}
 
-			layers.floating.push({
+			layers.fg.push({
 				image: sprite,
-				position: [ x, y, z ]
+				position: [ x, y + 2, z - 2 ]
 			})
 		} else {
 			layers.pieces.push({
